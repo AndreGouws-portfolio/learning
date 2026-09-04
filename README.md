@@ -49,6 +49,20 @@ No database server, no login required. The database is created automatically on 
 
 To stop the server, press `Ctrl+C` in the terminal. To run it again later, just repeat step 5 (re-activate the virtual environment first if you opened a new terminal: `source .venv/bin/activate`).
 
+### Desktop mode (always-on-top panel)
+
+Instead of opening it in a browser tab, you can run it as a native always-on-top window docked to the right edge of your screen — one third of the screen wide, full height, pinned above every other window so new leads are always visible while you work:
+
+```bash
+python desktop.py
+```
+
+- **Maximize** the window and it un-pins (behaves like a normal full-screen app).
+- **Restore** it back down and it re-pins itself on top automatically.
+- It runs the exact same app as `python app.py` (just embedded in a native window instead of a browser tab) — so ngrok, the webhook setup, everything below still works exactly the same way. Run one or the other, not both at once (both try to use port 5000).
+- **Windows only** for the screen-docking math (it reads your screen's work area, i.e. excluding the taskbar). On macOS/Linux it'll still open always-on-top, just centered with a default size, since this project is set up for your Windows machine.
+- Needs the **Microsoft Edge WebView2 Runtime**, which comes preinstalled on virtually all current Windows 10/11 machines. If `python desktop.py` fails to open a window, grab it from [developer.microsoft.com/microsoft-edge/webview2](https://developer.microsoft.com/en-us/microsoft-edge/webview2/) (the "Evergreen Bootstrapper") and try again.
+
 ### Starting over
 
 If you want a clean slate (delete all data), stop the server and delete the database file:
@@ -147,8 +161,9 @@ If auto-matching doesn't find the right contact (e.g. they messaged from a diffe
 ## Project structure
 
 ```
-app.py                       Entry point — run this to start the app
-requirements.txt             Python dependencies (Flask, requests, python-dotenv)
+app.py                       Entry point — plain browser mode
+desktop.py                   Entry point — always-on-top native window mode
+requirements.txt             Python dependencies (Flask, requests, python-dotenv, pywebview)
 seed.py                      Optional script to load sample data
 .env.example                 Copy to .env to configure WhatsApp/Messenger
 crm/
