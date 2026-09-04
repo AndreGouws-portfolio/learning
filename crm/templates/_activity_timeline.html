@@ -1,0 +1,46 @@
+{% macro timeline(activities, show_context=False) %}
+  {% if not activities %}
+    <p class="subtext" style="text-align:center; padding: 20px 0;">No activity yet.</p>
+  {% else %}
+    <ul class="timeline">
+      {% for a in activities %}
+        <li>
+          <div class="row-top">
+            {% if a.type == 'TASK' %}
+              <form class="toggle" method="post" action="{{ url_for('activities.toggle', activity_id=a.id) }}">
+                <input type="hidden" name="completed" value="{{ '0' if a.completed_at else '1' }}">
+                <input type="hidden" name="next" value="{{ request.full_path }}">
+                <button type="submit" class="check-btn {{ 'done' if a.completed_at }}" aria-label="Toggle done">{{ '☑' if a.completed_at else '☐' }}</button>
+              </form>
+            {% else %}
+              <span class="badge">{{ a.type|title }}</span>
+            {% endif %}
+            <div class="body">
+              <span class="title {{ 'done' if a.completed_at }}">{{ a.title }}</span>
+              {% if a.type == 'TASK' and a.due_date and not a.completed_at %}
+                <span class="badge {{ 'badge-red' if a.due_date|is_overdue else '' }}">Due {{ a.due_date|pretty_date }}</span>
+              {% endif %}
+              {% if a.notes %}<div class="notes">{{ a.notes }}</div>{% endif %}
+              <div class="meta">
+                <span>{{ a.created_at|pretty_date }}</span>
+                {% if show_context and a.contact_id %}
+                  <a href="{{ url_for('contacts.detail', contact_id=a.contact_id) }}">{{ a.contact_first_name }} {{ a.contact_last_name }}</a>
+                {% endif %}
+                {% if show_context and a.deal_id %}
+                  <a href="{{ url_for('deals.detail', deal_id=a.deal_id) }}">{{ a.deal_title }}</a>
+                {% endif %}
+                {% if show_context and a.company_id %}
+                  <a href="{{ url_for('companies.detail', company_id=a.company_id) }}">{{ a.company_name }}</a>
+                {% endif %}
+              </div>
+            </div>
+            <form method="post" action="{{ url_for('activities.delete', activity_id=a.id) }}" data-confirm="Delete this activity?">
+              <input type="hidden" name="next" value="{{ request.full_path }}">
+              <button type="submit" class="del-btn" aria-label="Delete">✕</button>
+            </form>
+          </div>
+        </li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+{% endmacro %}

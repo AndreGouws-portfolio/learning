@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}Not found · Orbit CRM{% endblock %}
+{% block content %}
+  <div class="empty">
+    <h3>Not found</h3>
+    <p>That record doesn't exist — it may have been deleted.</p>
+    <a class="btn btn-outline" href="{{ url_for('dashboard.index') }}">Back to dashboard</a>
+  </div>
+{% endblock %}

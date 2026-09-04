@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% from "_activity_timeline.html" import timeline %}
+{% block title %}Dashboard · Orbit CRM{% endblock %}
+{% block content %}
+  <div class="page-header">
+    <div>
+      <h1>Dashboard</h1>
+      <p>Your pipeline at a glance</p>
+    </div>
+  </div>
+
+  <div class="stats">
+    <div class="stat-card">
+      <div class="stat-icon">👤</div>
+      <div><div class="stat-label">Contacts</div><div class="stat-value">{{ contact_count }}</div></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">🏢</div>
+      <div><div class="stat-label">Companies</div><div class="stat-value">{{ company_count }}</div></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">$</div>
+      <div><div class="stat-label">Open pipeline</div><div class="stat-value">{{ open_value|currency }}</div></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">☑</div>
+      <div><div class="stat-label">Open tasks</div><div class="stat-value">{{ open_task_count }}</div></div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-header">
+        <h2>Pipeline by stage</h2>
+        <span class="badge badge-green">↗ {{ won_value|currency }} won</span>
+      </div>
+      <div class="card-body">
+        <div class="bar-chart">
+          {% for stage, value in stage_totals.items() %}
+            <div class="bar-col">
+              <div class="bar-value">{{ value|currency }}</div>
+              <div class="bar" style="height: {{ ((value / max_stage_value * 100) if max_stage_value else 0)|round(1) }}%;"></div>
+              <div class="bar-label">{{ stage|title }}</div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><h2>Upcoming tasks</h2></div>
+      <div class="card-body">
+        {% if not upcoming_tasks %}
+          <p class="subtext" style="text-align:center; padding: 20px 0;">No open tasks. You're all caught up.</p>
+        {% else %}
+          {{ timeline(upcoming_tasks, show_context=True) }}
+        {% endif %}
+        <div style="text-align:center; margin-top:8px;">
+          <a href="{{ url_for('activities.tasks') }}" class="subtext">View all tasks</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header"><h2>Recent activity</h2></div>
+    <div class="card-body">
+      {{ timeline(recent_activity, show_context=True) }}
+    </div>
+  </div>
+{% endblock %}

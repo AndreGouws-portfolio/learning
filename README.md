@@ -1,110 +1,90 @@
 # Orbit CRM
 
-A detailed CRM for tracking contacts, companies, deals, and tasks — built with Next.js, Prisma, and Postgres, deployed on Vercel.
+A detailed CRM for tracking contacts, companies, deals, and tasks — runs entirely on your own machine, no accounts, no cloud services, no build step.
 
 ## Features
 
 - **Contacts & Companies** — full records with notes, linked company/contact relationships, and search
 - **Deals pipeline** — drag-and-drop Kanban board across Lead → Qualified → Proposal → Negotiation → Won/Lost, with pipeline value per stage
 - **Tasks & activities** — to-dos, calls, emails, meetings, and notes logged on a timeline against any contact, company, or deal
-- **Dashboard** — key metrics, pipeline-by-stage chart, upcoming tasks, and a recent activity feed
+- **Dashboard** — key metrics, a pipeline-by-stage chart, upcoming tasks, and a recent activity feed
 - **Global search** across contacts, companies, and deals
-- **Authentication** — email/password accounts with signed, HTTP-only session cookies (no third-party auth service required)
 
 ## Tech stack
 
-- [Next.js 16](https://nextjs.org) (App Router, Server Actions, TypeScript)
-- [Prisma](https://www.prisma.io) ORM on PostgreSQL
-- [Tailwind CSS](https://tailwindcss.com) + [Radix UI](https://www.radix-ui.com) primitives
-- [dnd-kit](https://dndkit.com) for the deals Kanban board
-- [Recharts](https://recharts.org) for the dashboard chart
-- `bcryptjs` + `jose` for password hashing and signed session cookies
+Plain and dependency-light on purpose:
 
-## Getting started locally
+- [Flask](https://flask.palletsprojects.com) (Python web framework) — the *only* thing you need to `pip install`
+- SQLite — a single file database (`instance/crm.db`), no server to install or configure
+- Server-rendered HTML templates (Jinja2) + plain CSS — no Node.js, no npm, no build step
+- A little vanilla JavaScript for the drag-and-drop Kanban board — no frontend framework or CDN
 
-### 1. Install dependencies
+## Running it locally
 
-```bash
-npm install
-```
-
-### 2. Configure environment variables
-
-Copy `.env.example` to `.env` and fill in the values:
+You need Python 3.9+ installed. Then, from this folder:
 
 ```bash
-cp .env.example .env
+# 1. Create a virtual environment (keeps dependencies isolated)
+python3 -m venv .venv
+
+# 2. Activate it
+source .venv/bin/activate        # macOS/Linux
+.venv\Scripts\activate           # Windows
+
+# 3. Install the one dependency
+pip install -r requirements.txt
+
+# 4. (Optional) load sample data — companies, contacts, and deals to explore
+python seed.py
+
+# 5. Run it
+python app.py
 ```
 
-| Variable | Description |
-| --- | --- |
-| `DATABASE_URL` | Postgres connection string, e.g. `postgresql://user:password@localhost:5432/orbit_crm` |
-| `AUTH_SECRET` | Random secret used to sign session cookies. Generate one with `openssl rand -base64 32` |
-| `SEED_USER_EMAIL` / `SEED_USER_PASSWORD` | Optional — used by `npm run db:seed` to create a demo user |
+Then open **http://127.0.0.1:5000** in your browser.
 
-### 3. Set up the database
+That's it — no database server, no environment variables, no login required. The database is created automatically on first run at `instance/crm.db`.
 
-Run this against any Postgres instance (local, Docker, or a hosted service — see below):
+To stop the server, press `Ctrl+C` in the terminal. To run it again later, just repeat step 5 (re-activate the virtual environment first if you opened a new terminal: `source .venv/bin/activate`).
+
+### Starting over
+
+If you want a clean slate (delete all data), stop the server and delete the database file:
 
 ```bash
-npm run db:migrate   # applies migrations and generates the Prisma client
-npm run db:seed       # optional: creates a demo user + sample data
+rm instance/crm.db
 ```
 
-### 4. Run the dev server
-
-```bash
-npm run dev
-```
-
-Visit [http://localhost:3000](http://localhost:3000). If you ran `db:seed`, sign in with the credentials from `SEED_USER_EMAIL` / `SEED_USER_PASSWORD` (defaults: `demo@orbitcrm.app` / `password123`). Otherwise, use the **Create one** link on the sign-in page to register the first account.
-
-## Deploying to Vercel
-
-1. **Push this repository to GitHub** (already done if you're reading this from the repo).
-2. **Create a Postgres database.** The easiest options that integrate directly with Vercel:
-   - [Vercel Postgres](https://vercel.com/docs/storage/vercel-postgres) (powered by Neon) — add it from your Vercel project's **Storage** tab, which automatically sets `DATABASE_URL` for you.
-   - Or any external Postgres provider (Neon, Supabase, Railway, etc.) — copy its connection string.
-3. **Import the repository into Vercel** at [vercel.com/new](https://vercel.com/new) and select this repo.
-4. **Set environment variables** in the Vercel project settings (Settings → Environment Variables):
-   - `DATABASE_URL` — your Postgres connection string (skip this if you used Vercel Postgres, which sets it automatically)
-   - `AUTH_SECRET` — a random string (`openssl rand -base64 32`)
-5. **Deploy.** The build command (`npm run build`) runs `prisma generate` automatically before `next build` via the `build` script, and `postinstall` also runs `prisma generate` as a safety net.
-6. **Run the initial migration** against your production database once, from your local machine (with `DATABASE_URL` pointed at production) or via the Vercel CLI:
-
-   ```bash
-   DATABASE_URL="<your-production-url>" npx prisma migrate deploy
-   ```
-
-7. Optionally seed a first user the same way:
-
-   ```bash
-   DATABASE_URL="<your-production-url>" npm run db:seed
-   ```
-
-   Or just visit `/register` on the deployed site to create your first account.
+It will be recreated empty the next time you run `python app.py`.
 
 ## Project structure
 
 ```
-prisma/schema.prisma        Data model (User, Company, Contact, Deal, Activity)
-prisma/seed.ts               Demo data seed script
-src/lib/auth.ts              Session cookie signing/verification
-src/lib/actions/             Server Actions for all CRUD operations
-src/proxy.ts                 Route protection (redirects unauthenticated users to /login)
-src/components/ui/           Reusable UI primitives (button, input, dialog, table, ...)
-src/app/(auth)/              Login and register pages
-src/app/(dashboard)/         Authenticated app: dashboard, contacts, companies, deals, tasks, search
+app.py                       Entry point — run this to start the app
+requirements.txt             Python dependencies (just Flask)
+seed.py                      Optional script to load sample data
+crm/
+  __init__.py                Flask app factory
+  db.py                      SQLite connection + auto-setup
+  schema.sql                 Table definitions (companies, contacts, deals, activities)
+  util.py                    Small helpers
+  routes/                    One file per feature area
+    dashboard.py
+    contacts.py
+    companies.py
+    deals.py
+    activities.py            Tasks + activity timeline (shared across contacts/companies/deals)
+    search.py
+  templates/                 Jinja2 HTML templates, organized to match routes/
+  static/
+    style.css                All styling (no framework/CDN)
+    app.js                   Dropdown menus, delete confirmations
+    kanban.js                Drag-and-drop for the deals board
+instance/                    Created automatically — holds crm.db (not committed to git)
 ```
 
-## Useful scripts
+## Notes
 
-| Command | Description |
-| --- | --- |
-| `npm run dev` | Start the dev server |
-| `npm run build` | Production build (runs `prisma generate` first) |
-| `npm run lint` | Lint the codebase |
-| `npm run db:migrate` | Create/apply a migration in development |
-| `npm run db:deploy` | Apply existing migrations (used in production) |
-| `npm run db:seed` | Seed a demo user and sample data |
-| `npm run db:studio` | Open Prisma Studio to browse the database |
+- Single user, no login — this is meant to run on your own computer for your own use.
+- All data lives in `instance/crm.db`. Back it up like any file (copy it, put it in Dropbox, etc.) if you want to keep it safe.
+- The dev server Flask prints a warning about not being a "production" server — that's expected and totally fine for local personal use.

@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Orbit CRM{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
+</head>
+<body>
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <span class="brand-mark">O</span>
+        <span>Orbit CRM</span>
+      </div>
+      <nav class="nav">
+        <a href="{{ url_for('dashboard.index') }}" class="{{ 'active' if request.endpoint == 'dashboard.index' }}">Dashboard</a>
+        <a href="{{ url_for('contacts.index') }}" class="{{ 'active' if request.blueprint == 'contacts' }}">Contacts</a>
+        <a href="{{ url_for('companies.index') }}" class="{{ 'active' if request.blueprint == 'companies' }}">Companies</a>
+        <a href="{{ url_for('deals.index') }}" class="{{ 'active' if request.blueprint == 'deals' }}">Deals</a>
+        <a href="{{ url_for('activities.tasks') }}" class="{{ 'active' if request.blueprint == 'activities' }}">Tasks</a>
+      </nav>
+    </aside>
+
+    <div class="main">
+      <header class="topbar">
+        <form class="search" method="get" action="{{ url_for('search.index') }}">
+          <input type="search" name="q" placeholder="Search contacts, companies, deals…" value="{{ request.args.get('q', '') if request.endpoint == 'search.index' else '' }}">
+        </form>
+        <div class="topbar-actions">
+          <div class="menu">
+            <button type="button" class="btn btn-primary menu-trigger">+ New</button>
+            <div class="menu-list">
+              <a href="{{ url_for('contacts.new') }}">Contact</a>
+              <a href="{{ url_for('companies.new') }}">Company</a>
+              <a href="{{ url_for('deals.new') }}">Deal</a>
+              <a href="{{ url_for('activities.tasks', new=1) }}">Task</a>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <main class="content">
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            <div class="flash">{{ messages[0] }}</div>
+          {% endif %}
+        {% endwith %}
+        {% block content %}{% endblock %}
+      </main>
+    </div>
+  </div>
+
+  <script src="{{ url_for('static', filename='app.js') }}"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

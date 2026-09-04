@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% from "_activity_timeline.html" import timeline %}
+{% from "_quick_add_activity.html" import quick_add %}
+{% block title %}{{ company.name }} · Orbit CRM{% endblock %}
+{% block content %}
+  <div class="grid-2">
+    <div>
+      <div class="page-header">
+        <div>
+          <h1>{{ company.name }}</h1>
+          {% if company.industry %}<p>{{ company.industry }}</p>{% endif %}
+        </div>
+        <div class="actions">
+          <a class="btn btn-outline btn-sm" href="{{ url_for('companies.edit', company_id=company.id) }}">Edit</a>
+          <form method="post" action="{{ url_for('companies.delete', company_id=company.id) }}" data-confirm="Delete this company? Linked contacts and deals will be kept, unlinked.">
+            <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+          </form>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h2>Activity</h2>
+          {{ quick_add(company_id=company.id) }}
+        </div>
+        <div class="card-body">
+          {{ timeline(activities) }}
+        </div>
+      </div>
+    </div>
+
+    <div class="col-side">
+      <div class="card">
+        <div class="card-body detail-list">
+          {% if company.website %}<div class="row"><span class="k">Website</span> <a href="{{ company.website }}" target="_blank" rel="noopener">{{ company.website }}</a></div>{% endif %}
+          {% if company.phone %}<div class="row"><span class="k">Phone</span> <a href="tel:{{ company.phone }}">{{ company.phone }}</a></div>{% endif %}
+          {% if company.address %}<div class="row"><span class="k">Address</span> <span>{{ company.address }}</span></div>{% endif %}
+          {% if company.notes %}<div class="profile-notes">{{ company.notes }}</div>{% endif %}
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><h2>Contacts ({{ contacts|length }})</h2></div>
+        <div class="card-body">
+          {% if not contacts %}
+            <p class="subtext">No contacts at this company.</p>
+          {% else %}
+            {% for c in contacts %}
+              <a class="link-row" href="{{ url_for('contacts.detail', contact_id=c.id) }}">
+                <strong>{{ c.first_name }} {{ c.last_name }}</strong>
+              </a>
+            {% endfor %}
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><h2>Deals ({{ deals|length }})</h2></div>
+        <div class="card-body">
+          {% if not deals %}
+            <p class="subtext">No deals linked to this company.</p>
+          {% else %}
+            {% for d in deals %}
+              <a class="link-row" href="{{ url_for('deals.detail', deal_id=d.id) }}">
+                <div>
+                  <div><strong>{{ d.title }}</strong></div>
+                  <div class="subtext">{{ d.value|currency }} · {{ d.expected_close_date|pretty_date }}</div>
+                </div>
+                <span class="badge">{{ d.stage|title }}</span>
+              </a>
+            {% endfor %}
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

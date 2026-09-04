@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% from "_activity_timeline.html" import timeline %}
+{% from "_quick_add_activity.html" import quick_add %}
+{% block title %}Tasks · Orbit CRM{% endblock %}
+{% block content %}
+  <div class="page-header">
+    <div>
+      <h1>Tasks</h1>
+      <p>{{ pending|length }} open task{{ '' if pending|length == 1 else 's' }}</p>
+    </div>
+    <div class="actions">
+      {{ quick_add(open=open_new, label='New task') }}
+    </div>
+  </div>
+
+  {% if not pending and not completed %}
+    <div class="empty">
+      <h3>No tasks yet</h3>
+      <p>Create a task to keep track of follow-ups and to-dos.</p>
+    </div>
+  {% else %}
+    <div class="card">
+      <div class="card-header"><h2>Open ({{ pending|length }})</h2></div>
+      <div class="card-body">
+        {{ timeline(pending, show_context=True) }}
+      </div>
+    </div>
+
+    {% if completed %}
+      <div class="card">
+        <div class="card-header"><h2>Recently completed</h2></div>
+        <div class="card-body">
+          {{ timeline(completed, show_context=True) }}
+        </div>
+      </div>
+    {% endif %}
+  {% endif %}
+{% endblock %}
