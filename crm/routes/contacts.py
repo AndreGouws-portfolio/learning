@@ -1,8 +1,15 @@
+import re
+
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 
 from ..db import get_db
 
 bp = Blueprint("contacts", __name__, url_prefix="/contacts")
+
+
+def _digits_or_none(value):
+    digits = re.sub(r"\D", "", value or "")
+    return digits or None
 
 
 def _companies(db):
@@ -46,8 +53,8 @@ def new():
             return render_template("contacts/form.html", contact=request.form, companies=_companies(db))
 
         cur = db.execute(
-            "INSERT INTO contacts (first_name, last_name, email, phone, title, company_id, notes) "
-            "VALUES (?, ?, ?, ?, ?, ?, ?)",
+            "INSERT INTO contacts (first_name, last_name, email, phone, title, company_id, notes, "
+            "whatsapp_number, messenger_psid) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
             (
                 first_name,
                 last_name,
@@ -56,6 +63,8 @@ def new():
                 request.form.get("title") or None,
                 request.form.get("company_id") or None,
                 request.form.get("notes") or None,
+                _digits_or_none(request.form.get("whatsapp_number")),
+                request.form.get("messenger_psid", "").strip() or None,
             ),
         )
         db.commit()
@@ -104,8 +113,8 @@ def edit(contact_id):
             return render_template("contacts/form.html", contact=request.form, companies=_companies(db), contact_id=contact_id)
 
         db.execute(
-            "UPDATE contacts SET first_name=?, last_name=?, email=?, phone=?, title=?, company_id=?, notes=? "
-            "WHERE id=?",
+            "UPDATE contacts SET first_name=?, last_name=?, email=?, phone=?, title=?, company_id=?, "
+            "notes=?, whatsapp_number=?, messenger_psid=? WHERE id=?",
             (
                 first_name,
                 last_name,
@@ -114,6 +123,8 @@ def edit(contact_id):
                 request.form.get("title") or None,
                 request.form.get("company_id") or None,
                 request.form.get("notes") or None,
+                _digits_or_none(request.form.get("whatsapp_number")),
+                request.form.get("messenger_psid", "").strip() or None,
                 contact_id,
             ),
         )

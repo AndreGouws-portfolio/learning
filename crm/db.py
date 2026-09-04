@@ -21,10 +21,31 @@ def close_db(e=None):
         db.close()
 
 
+# Columns added after the initial release. New installs get them from
+# schema.sql directly; existing databases get them patched in here so
+# `python app.py` keeps working with no manual migration step.
+_NEW_COLUMNS = {
+    "contacts": {
+        "whatsapp_number": "TEXT",
+        "messenger_psid": "TEXT",
+    },
+}
+
+
+def _migrate(db):
+    for table, columns in _NEW_COLUMNS.items():
+        existing = {row["name"] for row in db.execute(f"PRAGMA table_info({table})")}
+        for name, coltype in columns.items():
+            if name not in existing:
+                db.execute(f"ALTER TABLE {table} ADD COLUMN {name} {coltype}")
+
+
 def init_db():
     db = get_db()
-    with open(SCHEMA_PATH) as f:
-        db.executescript(f.read())
+    tables_sql, _, indexes_sql = open(SCHEMA_PATH).read().partition("-- INDEXES")
+    db.executescript(tables_sql)
+    _migrate(db)
+    db.executescript(indexes_sql)
     db.commit()
 
 

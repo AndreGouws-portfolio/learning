@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Inbox · Orbit CRM{% endblock %}
+{% block content %}
+  <div class="page-header">
+    <div>
+      <h1>Inbox</h1>
+      <p>WhatsApp and Messenger conversations, all in one place</p>
+    </div>
+  </div>
+
+  {% if not conversations %}
+    <div class="empty">
+      <h3>No conversations yet</h3>
+      <p>Once a lead messages you on WhatsApp or Messenger, it'll show up here.</p>
+    </div>
+  {% else %}
+    <div class="card">
+      <div class="card-body tight">
+        {% for c in conversations %}
+          <a class="inbox-row" href="{{ url_for('inbox.thread', contact_id=c.id) }}">
+            <div class="avatar" style="width:38px;height:38px;font-size:13px;margin:0;">
+              {{ (c.first_name ~ ' ' ~ c.last_name)|initials }}
+            </div>
+            <div class="inbox-row-body">
+              <div class="inbox-row-top">
+                <strong>{{ c.first_name }} {{ c.last_name }}</strong>
+                <span class="badge {{ 'badge-green' if c.last_channel == 'WHATSAPP' else 'badge-blue' }}">
+                  {{ 'WhatsApp' if c.last_channel == 'WHATSAPP' else 'Messenger' }}
+                </span>
+                <span class="inbox-time">{{ c.last_at|pretty_date }}</span>
+              </div>
+              <div class="inbox-snippet">
+                {{ 'You: ' if c.last_direction == 'OUT' }}{{ c.last_body or '' }}
+              </div>
+            </div>
+            {% if c.unread %}<span class="unread-dot">{{ c.unread }}</span>{% endif %}
+          </a>
+        {% endfor %}
+      </div>
+    </div>
+  {% endif %}
+{% endblock %}

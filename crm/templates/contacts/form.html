@@ -36,6 +36,16 @@
               {% endfor %}
             </select>
           </div>
+          <div class="field">
+            <label for="whatsapp_number">WhatsApp number</label>
+            <input type="tel" id="whatsapp_number" name="whatsapp_number" placeholder="15551234567"
+                   value="{{ contact.whatsapp_number if contact else '' }}">
+          </div>
+          <div class="field">
+            <label for="messenger_psid">Messenger PSID</label>
+            <input type="text" id="messenger_psid" name="messenger_psid" placeholder="Usually filled in automatically"
+                   value="{{ contact.messenger_psid if contact else '' }}">
+          </div>
           <div class="field span-2">
             <label for="notes">Notes</label>
             <textarea id="notes" name="notes" rows="4">{{ contact.notes if contact else '' }}</textarea>

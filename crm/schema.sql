@@ -20,6 +20,8 @@ CREATE TABLE IF NOT EXISTS contacts (
     title TEXT,
     company_id INTEGER REFERENCES companies (id) ON DELETE SET NULL,
     notes TEXT,
+    whatsapp_number TEXT,
+    messenger_psid TEXT,
     created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
@@ -51,7 +53,29 @@ CREATE TABLE IF NOT EXISTS activities (
     created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
+CREATE TABLE IF NOT EXISTS messages (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    channel TEXT NOT NULL CHECK (channel IN ('WHATSAPP', 'MESSENGER')),
+    direction TEXT NOT NULL CHECK (direction IN ('IN', 'OUT')),
+    external_id TEXT,
+    contact_id INTEGER NOT NULL REFERENCES contacts (id) ON DELETE CASCADE,
+    body TEXT,
+    media_url TEXT,
+    status TEXT,
+    read_at TEXT,
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+-- INDEXES
+-- (created after column migrations run, since some of these reference
+-- columns that only exist on older databases once db.py patches them in)
 CREATE INDEX IF NOT EXISTS idx_contacts_company ON contacts (company_id);
+CREATE INDEX IF NOT EXISTS idx_contacts_whatsapp ON contacts (whatsapp_number);
+CREATE INDEX IF NOT EXISTS idx_contacts_messenger ON contacts (messenger_psid);
+CREATE INDEX IF NOT EXISTS idx_messages_contact ON messages (contact_id);
+CREATE INDEX IF NOT EXISTS idx_messages_created ON messages (created_at);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_messages_external_id
+    ON messages (channel, external_id) WHERE external_id IS NOT NULL;
 CREATE INDEX IF NOT EXISTS idx_deals_company ON deals (company_id);
 CREATE INDEX IF NOT EXISTS idx_deals_contact ON deals (contact_id);
 CREATE INDEX IF NOT EXISTS idx_deals_stage ON deals (stage);
