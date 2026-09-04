@@ -18,7 +18,11 @@ def pretty_date(value):
             value = datetime.strptime(value, "%Y-%m-%d").date()
         except ValueError:
             return value
-    return value.strftime("%b %-d, %Y") if hasattr(value, "strftime") else str(value)
+    if not hasattr(value, "strftime"):
+        return str(value)
+    # Avoid %-d / %#d (no-leading-zero day) - those are platform-specific
+    # strftime extensions (glibc only) and raise ValueError on Windows.
+    return f"{value.strftime('%b')} {value.day}, {value.year}"
 
 
 def initials(name):
