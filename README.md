@@ -7,6 +7,7 @@ A detailed CRM for tracking contacts, companies, deals, and tasks. Runs locally 
 - **Contacts & Companies** — full records with notes, linked company/contact relationships, and search
 - **Deals pipeline** — drag-and-drop Kanban board across Lead → Qualified → Proposal → Negotiation → Won/Lost, with pipeline value per stage
 - **Tasks & activities** — to-dos, calls, emails, meetings, and notes logged on a timeline against any contact, company, or deal
+- **Calendar** — month view of scheduled follow-ups; click any day to schedule one, optionally linked to a contact, company, or deal
 - **Inbox** — WhatsApp and Messenger conversations in one place: incoming messages auto-create or match a contact, and you can reply from inside the CRM
 - **Dashboard** — key metrics, a pipeline-by-stage chart, upcoming tasks, and a recent activity feed
 - **Global search** across contacts, companies, and deals
@@ -198,6 +199,7 @@ crm/
     companies.py
     deals.py
     activities.py            Tasks + activity timeline (shared across contacts/companies/deals)
+    calendar.py              Month view of scheduled follow-ups
     search.py
     webhooks.py              Receives inbound WhatsApp/Messenger messages
     inbox.py                 Conversation list, thread view, sending replies

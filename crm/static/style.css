@@ -516,3 +516,95 @@ tr.row-link:hover { background: #fafafa; }
   border-radius: 6px;
   font-size: 13px;
 }
+
+/* Calendar */
+.calendar-nav {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 12px;
+}
+.calendar-nav h2 { margin: 0; font-size: 15px; font-weight: 600; min-width: 160px; text-align: center; }
+
+.calendar {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.calendar-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  border-bottom: 1px solid var(--border);
+  background: #fafafa;
+}
+.calendar-weekdays span {
+  padding: 8px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+.calendar-week {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+}
+.calendar-week:not(:last-child) { border-bottom: 1px solid var(--border); }
+.calendar-day {
+  min-height: 110px;
+  padding: 6px;
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.calendar-day:last-child { border-right: none; }
+.calendar-day.out-of-month { background: #fafafa; }
+.calendar-day.out-of-month .calendar-day-num { color: var(--text-faint); }
+.calendar-day.is-today { background: var(--blue-bg); }
+.calendar-day-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.calendar-day-num { font-size: 12px; font-weight: 600; }
+.calendar-add {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-faint);
+  line-height: 1;
+  padding: 2px 5px;
+  border-radius: 4px;
+}
+.calendar-add:hover { background: #f0f0f0; color: var(--text); text-decoration: none; }
+.calendar-day-items { display: flex; flex-direction: column; gap: 3px; overflow-y: auto; }
+.calendar-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+  padding: 2px 6px;
+  border-radius: 5px;
+  background: #f5f5f5;
+  font-size: 11px;
+  line-height: 1.4;
+}
+.calendar-item a, .calendar-item span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: inherit;
+}
+.calendar-item.done { opacity: 0.5; text-decoration: line-through; }
+.calendar-item-toggle button {
+  border: none;
+  background: none;
+  cursor: pointer;
+  padding: 0;
+  font-size: 11px;
+  line-height: 1;
+}
+@media (max-width: 900px) {
+  .calendar-day { min-height: 70px; }
+  .calendar-weekdays span { font-size: 9px; padding: 6px 4px; }
+}
