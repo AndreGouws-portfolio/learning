@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Companies · Orbit CRM{% endblock %}
+{% block content %}
+  <div class="page-header">
+    <div>
+      <h1>Companies</h1>
+      <p>{{ companies|length }} compan{{ 'y' if companies|length == 1 else 'ies' }}</p>
+    </div>
+    <div class="actions">
+      <a class="btn btn-primary" href="{{ url_for('companies.new') }}">+ New company</a>
+    </div>
+  </div>
+
+  <form method="get" style="max-width: 280px; margin-bottom: 16px;">
+    <input type="search" name="q" value="{{ q }}" placeholder="Filter by name…"
+           style="width:100%; padding:7px 10px; border:1px solid var(--border-strong); border-radius:6px;">
+  </form>
+
+  {% if not companies %}
+    <div class="empty">
+      <h3>No companies yet</h3>
+      <p>Add companies to organize contacts and deals by account.</p>
+      <a class="btn btn-primary" href="{{ url_for('companies.new') }}">+ New company</a>
+    </div>
+  {% else %}
+    <div class="card">
+      <table>
+        <thead><tr><th>Name</th><th>Industry</th><th>Contacts</th><th>Deals</th></tr></thead>
+        <tbody>
+          {% for co in companies %}
+            <tr class="row-link">
+              <td>
+                <a href="{{ url_for('companies.detail', company_id=co.id) }}"><strong>{{ co.name }}</strong></a>
+                {% if co.website %}<div class="subtext">{{ co.website }}</div>{% endif %}
+              </td>
+              <td>{{ co.industry or '—' }}</td>
+              <td>{{ co.contact_count }}</td>
+              <td>{{ co.deal_count }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% endif %}
+{% endblock %}

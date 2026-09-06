@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit deal' if deal else 'New deal' }} · Orbit CRM{% endblock %}
+{% block content %}
+  <div class="page-header"><h1>{{ 'Edit deal' if deal else 'New deal' }}</h1></div>
+
+  <div class="card" style="max-width: 640px;">
+    <div class="card-body">
+      <form method="post">
+        <div class="form-grid">
+          <div class="field span-2">
+            <label for="title">Deal title</label>
+            <input type="text" id="title" name="title" required value="{{ deal.title if deal else '' }}">
+          </div>
+          <div class="field">
+            <label for="value">Value (USD)</label>
+            <input type="number" id="value" name="value" min="0" step="0.01" value="{{ deal.value if deal else 0 }}">
+          </div>
+          <div class="field">
+            <label for="stage">Stage</label>
+            <select id="stage" name="stage">
+              {% for s in stages %}
+                <option value="{{ s }}" {{ 'selected' if deal and deal.stage == s }}>{{ s|title }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="field">
+            <label for="company_id">Company</label>
+            <select id="company_id" name="company_id">
+              <option value="">No company</option>
+              {% for co in companies %}
+                <option value="{{ co.id }}" {{ 'selected' if deal and deal.company_id|string == co.id|string }}>{{ co.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="field">
+            <label for="contact_id">Contact</label>
+            <select id="contact_id" name="contact_id">
+              <option value="">No contact</option>
+              {% for c in contacts %}
+                <option value="{{ c.id }}" {{ 'selected' if deal and deal.contact_id|string == c.id|string }}>{{ c.first_name }} {{ c.last_name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="field">
+            <label for="expected_close_date">Expected close date</label>
+            <input type="date" id="expected_close_date" name="expected_close_date" value="{{ (deal.expected_close_date or '')[:10] if deal else '' }}">
+          </div>
+          <div class="field span-2">
+            <label for="notes">Notes</label>
+            <textarea id="notes" name="notes" rows="4">{{ deal.notes if deal else '' }}</textarea>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary">{{ 'Save changes' if deal_id else 'Create deal' }}</button>
+        </div>
+      </form>
+    </div>
+  </div>
+{% endblock %}

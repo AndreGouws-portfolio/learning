@@ -1,0 +1,42 @@
+{% macro quick_add(contact_id=None, deal_id=None, company_id=None, open=False, label='Log activity') %}
+  <details class="menu-details" {{ 'open' if open }}>
+    <summary class="btn btn-outline btn-sm" style="list-style:none; cursor:pointer;">+ {{ label }}</summary>
+    <div class="card" style="margin-top: 10px;">
+      <div class="card-body">
+        <form method="post" action="{{ url_for('activities.create') }}">
+          {% if contact_id %}<input type="hidden" name="contact_id" value="{{ contact_id }}">{% endif %}
+          {% if deal_id %}<input type="hidden" name="deal_id" value="{{ deal_id }}">{% endif %}
+          {% if company_id %}<input type="hidden" name="company_id" value="{{ company_id }}">{% endif %}
+          <input type="hidden" name="next" value="{{ request.full_path }}">
+          <div class="form-grid">
+            <div class="field">
+              <label for="type">Type</label>
+              <select id="type" name="type">
+                <option value="TASK">To-do</option>
+                <option value="CALL">Call</option>
+                <option value="EMAIL">Email</option>
+                <option value="MEETING">Meeting</option>
+                <option value="NOTE">Note</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="due_date">Due date</label>
+              <input type="date" id="due_date" name="due_date">
+            </div>
+            <div class="field span-2">
+              <label for="title">Title</label>
+              <input type="text" id="title" name="title" required placeholder="Follow up call">
+            </div>
+            <div class="field span-2">
+              <label for="notes">Notes</label>
+              <textarea id="notes" name="notes" rows="2"></textarea>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary btn-sm">Save</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </details>
+{% endmacro %}

@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% from "_activity_timeline.html" import timeline %}
+{% from "_quick_add_activity.html" import quick_add %}
+{% block title %}Tasks · Orbit CRM{% endblock %}
+{% block content %}
+  <div class="page-header">
+    <div>
+      <h1>Tasks</h1>
+      <p>{{ pending|length }} open task{{ '' if pending|length == 1 else 's' }}</p>
+    </div>
+    <div class="actions">
+      {{ quick_add(open=open_new, label='New task') }}
+    </div>
+  </div>
+
+  {% if not pending and not completed %}
+    <div class="empty">
+      <h3>No tasks yet</h3>
+      <p>Create a task to keep track of follow-ups and to-dos.</p>
+    </div>
+  {% else %}
+    {% if groups.overdue %}
+      <div class="card">
+        <div class="card-header"><h2>Overdue ({{ groups.overdue|length }})</h2></div>
+        <div class="card-body">{{ timeline(groups.overdue, show_context=True) }}</div>
+      </div>
+    {% endif %}
+    {% if groups.due_today %}
+      <div class="card">
+        <div class="card-header"><h2>Due today ({{ groups.due_today|length }})</h2></div>
+        <div class="card-body">{{ timeline(groups.due_today, show_context=True) }}</div>
+      </div>
+    {% endif %}
+    {% if groups.this_week %}
+      <div class="card">
+        <div class="card-header"><h2>Due this week ({{ groups.this_week|length }})</h2></div>
+        <div class="card-body">{{ timeline(groups.this_week, show_context=True) }}</div>
+      </div>
+    {% endif %}
+    {% if groups.later %}
+      <div class="card">
+        <div class="card-header"><h2>Later ({{ groups.later|length }})</h2></div>
+        <div class="card-body">{{ timeline(groups.later, show_context=True) }}</div>
+      </div>
+    {% endif %}
+    {% if groups.no_date %}
+      <div class="card">
+        <div class="card-header"><h2>No due date ({{ groups.no_date|length }})</h2></div>
+        <div class="card-body">{{ timeline(groups.no_date, show_context=True) }}</div>
+      </div>
+    {% endif %}
+
+    {% if completed %}
+      <div class="card">
+        <div class="card-header"><h2>Recently completed</h2></div>
+        <div class="card-body">
+          {{ timeline(completed, show_context=True) }}
+        </div>
+      </div>
+    {% endif %}
+  {% endif %}
+{% endblock %}

@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}Search · Orbit CRM{% endblock %}
+{% block content %}
+  <div class="page-header">
+    <div>
+      <h1>Search</h1>
+      <p>{{ 'Results for "' ~ q ~ '"' if q else 'Search everything' }}</p>
+    </div>
+  </div>
+
+  {% if not q %}
+    <div class="empty">
+      <p>Use the search bar above to find contacts, companies, and deals.</p>
+    </div>
+  {% elif total == 0 %}
+    <div class="empty">
+      <p>No results found for "{{ q }}".</p>
+    </div>
+  {% else %}
+    {% if contacts %}
+      <div class="card">
+        <div class="card-header"><h2>Contacts ({{ contacts|length }})</h2></div>
+        <div class="card-body">
+          {% for c in contacts %}
+            <a class="link-row" href="{{ url_for('contacts.detail', contact_id=c.id) }}">
+              <strong>{{ c.first_name }} {{ c.last_name }}</strong>
+              {% if c.email %}<span class="subtext">{{ c.email }}</span>{% endif %}
+            </a>
+          {% endfor %}
+        </div>
+      </div>
+    {% endif %}
+
+    {% if companies %}
+      <div class="card">
+        <div class="card-header"><h2>Companies ({{ companies|length }})</h2></div>
+        <div class="card-body">
+          {% for co in companies %}
+            <a class="link-row" href="{{ url_for('companies.detail', company_id=co.id) }}">
+              <strong>{{ co.name }}</strong>
+            </a>
+          {% endfor %}
+        </div>
+      </div>
+    {% endif %}
+
+    {% if deals %}
+      <div class="card">
+        <div class="card-header"><h2>Deals ({{ deals|length }})</h2></div>
+        <div class="card-body">
+          {% for d in deals %}
+            <a class="link-row" href="{{ url_for('deals.detail', deal_id=d.id) }}">
+              <strong>{{ d.title }}</strong>
+              <span class="subtext">{{ d.value|currency }}</span>
+            </a>
+          {% endfor %}
+        </div>
+      </div>
+    {% endif %}
+  {% endif %}
+{% endblock %}
