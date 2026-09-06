@@ -14,14 +14,14 @@ def index():
         db = get_db()
         like = f"%{q}%"
         contacts = db.execute(
-            "SELECT * FROM contacts WHERE first_name LIKE ? OR last_name LIKE ? OR email LIKE ? LIMIT 20",
+            "SELECT * FROM contacts WHERE first_name ILIKE %s OR last_name ILIKE %s OR email ILIKE %s LIMIT 20",
             (like, like, like),
         ).fetchall()
         companies = db.execute(
-            "SELECT * FROM companies WHERE name LIKE ? LIMIT 20", (like,)
+            "SELECT * FROM companies WHERE name ILIKE %s LIMIT 20", (like,)
         ).fetchall()
         deals = db.execute(
-            "SELECT * FROM deals WHERE title LIKE ? LIMIT 20", (like,)
+            "SELECT * FROM deals WHERE title ILIKE %s LIMIT 20", (like,)
         ).fetchall()
 
     return render_template(

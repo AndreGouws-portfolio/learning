@@ -28,17 +28,17 @@ def index():
 @bp.route("/<int:contact_id>")
 def thread(contact_id):
     db = get_db()
-    contact = db.execute("SELECT * FROM contacts WHERE id = ?", (contact_id,)).fetchone()
+    contact = db.execute("SELECT * FROM contacts WHERE id = %s", (contact_id,)).fetchone()
     if contact is None:
         return render_template("404.html"), 404
 
     messages = db.execute(
-        "SELECT * FROM messages WHERE contact_id = ? ORDER BY created_at, id", (contact_id,)
+        "SELECT * FROM messages WHERE contact_id = %s ORDER BY created_at, id", (contact_id,)
     ).fetchall()
 
     db.execute(
-        "UPDATE messages SET read_at = datetime('now') "
-        "WHERE contact_id = ? AND direction = 'IN' AND read_at IS NULL",
+        "UPDATE messages SET read_at = to_char(timezone('utc', now()), 'YYYY-MM-DD HH24:MI:SS') "
+        "WHERE contact_id = %s AND direction = 'IN' AND read_at IS NULL",
         (contact_id,),
     )
     db.commit()
@@ -67,7 +67,7 @@ def thread(contact_id):
 @bp.route("/<int:contact_id>/send", methods=["POST"])
 def send(contact_id):
     db = get_db()
-    contact = db.execute("SELECT * FROM contacts WHERE id = ?", (contact_id,)).fetchone()
+    contact = db.execute("SELECT * FROM contacts WHERE id = %s", (contact_id,)).fetchone()
     if contact is None:
         return render_template("404.html"), 404
 
@@ -91,7 +91,7 @@ def send(contact_id):
 
         db.execute(
             "INSERT INTO messages (channel, direction, contact_id, body, status) "
-            "VALUES (?, 'OUT', ?, ?, 'sent')",
+            "VALUES (%s, 'OUT', %s, %s, 'sent')",
             (channel, contact_id, body),
         )
         db.commit()

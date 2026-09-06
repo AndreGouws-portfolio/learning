@@ -45,7 +45,7 @@ def create():
 
     db.execute(
         "INSERT INTO activities (type, title, notes, due_date, contact_id, deal_id, company_id, completed_at) "
-        "VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+        "VALUES (%s, %s, %s, %s, %s, %s, %s, %s)",
         (
             activity_type,
             title,
@@ -66,7 +66,7 @@ def toggle(activity_id):
     db = get_db()
     completed = request.form.get("completed") == "1"
     completed_at = datetime.now().isoformat(timespec="seconds") if completed else None
-    db.execute("UPDATE activities SET completed_at = ? WHERE id = ?", (completed_at, activity_id))
+    db.execute("UPDATE activities SET completed_at = %s WHERE id = %s", (completed_at, activity_id))
     db.commit()
     return redirect(safe_next(request.form.get("next"), url_for("activities.tasks")))
 
@@ -74,6 +74,6 @@ def toggle(activity_id):
 @bp.route("/activities/<int:activity_id>/delete", methods=["POST"])
 def delete(activity_id):
     db = get_db()
-    db.execute("DELETE FROM activities WHERE id = ?", (activity_id,))
+    db.execute("DELETE FROM activities WHERE id = %s", (activity_id,))
     db.commit()
     return redirect(safe_next(request.form.get("next"), url_for("activities.tasks")))

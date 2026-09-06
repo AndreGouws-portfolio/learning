@@ -1,4 +1,4 @@
-"""Populate the local database with sample data.
+"""Populate the database with sample data.
 
 Usage:
     python seed.py
@@ -18,73 +18,73 @@ def run():
 
         existing = db.execute("SELECT COUNT(*) AS n FROM companies").fetchone()["n"]
         if existing:
-            print("Database already has data — skipping seed. Delete instance/crm.db to start fresh.")
+            print("Database already has data — skipping seed.")
             return
 
         acme_id = db.execute(
             "INSERT INTO companies (name, website, industry, phone, address) "
-            "VALUES (?, ?, ?, ?, ?)",
+            "VALUES (%s, %s, %s, %s, %s) RETURNING id",
             ("Acme Corporation", "https://acme.example.com", "Manufacturing",
              "+1 555 0100", "123 Industrial Way, Springfield"),
-        ).lastrowid
+        ).fetchone()["id"]
 
         globex_id = db.execute(
-            "INSERT INTO companies (name, website, industry, phone) VALUES (?, ?, ?, ?)",
+            "INSERT INTO companies (name, website, industry, phone) VALUES (%s, %s, %s, %s) RETURNING id",
             ("Globex Inc.", "https://globex.example.com", "Software", "+1 555 0199"),
-        ).lastrowid
+        ).fetchone()["id"]
 
         jane_id = db.execute(
             "INSERT INTO contacts (first_name, last_name, email, phone, title, company_id) "
-            "VALUES (?, ?, ?, ?, ?, ?)",
+            "VALUES (%s, %s, %s, %s, %s, %s) RETURNING id",
             ("Jane", "Doe", "jane.doe@acme.example.com", "+1 555 0111",
              "VP of Operations", acme_id),
-        ).lastrowid
+        ).fetchone()["id"]
 
         mark_id = db.execute(
             "INSERT INTO contacts (first_name, last_name, email, phone, title, company_id) "
-            "VALUES (?, ?, ?, ?, ?, ?)",
+            "VALUES (%s, %s, %s, %s, %s, %s) RETURNING id",
             ("Mark", "Chen", "mark.chen@globex.example.com", "+1 555 0122",
              "CTO", globex_id),
-        ).lastrowid
+        ).fetchone()["id"]
 
         deal1_id = db.execute(
             "INSERT INTO deals (title, value, stage, company_id, contact_id, expected_close_date) "
-            "VALUES (?, ?, ?, ?, ?, ?)",
+            "VALUES (%s, %s, %s, %s, %s, %s) RETURNING id",
             ("Acme — Annual Platform License", 48000, "PROPOSAL", acme_id, jane_id,
              (date.today() + timedelta(days=21)).isoformat()),
-        ).lastrowid
+        ).fetchone()["id"]
 
         deal2_id = db.execute(
             "INSERT INTO deals (title, value, stage, company_id, contact_id, expected_close_date) "
-            "VALUES (?, ?, ?, ?, ?, ?)",
+            "VALUES (%s, %s, %s, %s, %s, %s) RETURNING id",
             ("Globex — Implementation Services", 15000, "QUALIFIED", globex_id, mark_id,
              (date.today() + timedelta(days=45)).isoformat()),
-        ).lastrowid
+        ).fetchone()["id"]
 
         db.execute(
-            "INSERT INTO deals (title, value, stage, company_id, closed_at) VALUES (?, ?, ?, ?, ?)",
+            "INSERT INTO deals (title, value, stage, company_id, closed_at) VALUES (%s, %s, %s, %s, %s)",
             ("Acme — Support Renewal", 9000, "WON", acme_id, date.today().isoformat()),
         )
 
         db.execute(
             "INSERT INTO activities (type, title, due_date, contact_id, deal_id, company_id) "
-            "VALUES (?, ?, ?, ?, ?, ?)",
+            "VALUES (%s, %s, %s, %s, %s, %s)",
             ("TASK", "Send updated proposal to Jane",
              (date.today() + timedelta(days=2)).isoformat(), jane_id, deal1_id, acme_id),
         )
         db.execute(
             "INSERT INTO activities (type, title, notes, completed_at, contact_id, deal_id, company_id) "
-            "VALUES (?, ?, ?, ?, ?, ?, ?)",
+            "VALUES (%s, %s, %s, %s, %s, %s, %s)",
             ("CALL", "Discovery call with Mark", "Discussed integration timeline and rollout plan.",
              date.today().isoformat(), mark_id, deal2_id, globex_id),
         )
         db.execute(
-            "INSERT INTO activities (type, title, due_date, deal_id, company_id) VALUES (?, ?, ?, ?, ?)",
+            "INSERT INTO activities (type, title, due_date, deal_id, company_id) VALUES (%s, %s, %s, %s, %s)",
             ("TASK", "Prepare implementation timeline",
              (date.today() - timedelta(days=1)).isoformat(), deal2_id, globex_id),
         )
         db.execute(
-            "INSERT INTO activities (type, title, notes, completed_at, company_id) VALUES (?, ?, ?, ?, ?)",
+            "INSERT INTO activities (type, title, notes, completed_at, company_id) VALUES (%s, %s, %s, %s, %s)",
             ("NOTE", "Kickoff notes", "Acme wants onboarding to start within 30 days of signing.",
              date.today().isoformat(), acme_id),
         )

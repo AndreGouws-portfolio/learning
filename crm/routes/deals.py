@@ -55,7 +55,7 @@ def new():
         closed_at = date.today().isoformat() if stage in ("WON", "LOST") else None
         cur = db.execute(
             "INSERT INTO deals (title, value, stage, company_id, contact_id, expected_close_date, notes, closed_at) "
-            "VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+            "VALUES (%s, %s, %s, %s, %s, %s, %s, %s) RETURNING id",
             (
                 title,
                 float(request.form.get("value") or 0),
@@ -67,8 +67,9 @@ def new():
                 closed_at,
             ),
         )
+        new_id = cur.fetchone()["id"]
         db.commit()
-        return redirect(url_for("deals.detail", deal_id=cur.lastrowid))
+        return redirect(url_for("deals.detail", deal_id=new_id))
 
     return render_template(
         "deals/form.html", deal=None, companies=_companies(db), contacts=_contacts(db), stages=STAGES
@@ -82,14 +83,14 @@ def detail(deal_id):
         "SELECT d.*, co.name AS company_name, c.first_name AS contact_first_name, "
         "c.last_name AS contact_last_name FROM deals d "
         "LEFT JOIN companies co ON co.id = d.company_id "
-        "LEFT JOIN contacts c ON c.id = d.contact_id WHERE d.id = ?",
+        "LEFT JOIN contacts c ON c.id = d.contact_id WHERE d.id = %s",
         (deal_id,),
     ).fetchone()
     if deal is None:
         return render_template("404.html"), 404
 
     activities = db.execute(
-        "SELECT * FROM activities WHERE deal_id = ? ORDER BY created_at DESC", (deal_id,)
+        "SELECT * FROM activities WHERE deal_id = %s ORDER BY created_at DESC", (deal_id,)
     ).fetchall()
     return render_template("deals/detail.html", deal=deal, activities=activities)
 
@@ -97,7 +98,7 @@ def detail(deal_id):
 @bp.route("/<int:deal_id>/edit", methods=["GET", "POST"])
 def edit(deal_id):
     db = get_db()
-    deal = db.execute("SELECT * FROM deals WHERE id = ?", (deal_id,)).fetchone()
+    deal = db.execute("SELECT * FROM deals WHERE id = %s", (deal_id,)).fetchone()
     if deal is None:
         return render_template("404.html"), 404
     deal = dict(deal)
@@ -114,8 +115,8 @@ def edit(deal_id):
         stage = request.form.get("stage") or "LEAD"
         closed_at = date.today().isoformat() if stage in ("WON", "LOST") else None
         db.execute(
-            "UPDATE deals SET title=?, value=?, stage=?, company_id=?, contact_id=?, "
-            "expected_close_date=?, notes=?, closed_at=? WHERE id=?",
+            "UPDATE deals SET title=%s, value=%s, stage=%s, company_id=%s, contact_id=%s, "
+            "expected_close_date=%s, notes=%s, closed_at=%s WHERE id=%s",
             (
                 title,
                 float(request.form.get("value") or 0),
@@ -140,7 +141,7 @@ def edit(deal_id):
 @bp.route("/<int:deal_id>/delete", methods=["POST"])
 def delete(deal_id):
     db = get_db()
-    db.execute("DELETE FROM deals WHERE id = ?", (deal_id,))
+    db.execute("DELETE FROM deals WHERE id = %s", (deal_id,))
     db.commit()
     return redirect(url_for("deals.index"))
 
@@ -153,6 +154,6 @@ def update_stage(deal_id):
 
     db = get_db()
     closed_at = date.today().isoformat() if stage in ("WON", "LOST") else None
-    db.execute("UPDATE deals SET stage = ?, closed_at = ? WHERE id = ?", (stage, closed_at, deal_id))
+    db.execute("UPDATE deals SET stage = %s, closed_at = %s WHERE id = %s", (stage, closed_at, deal_id))
     db.commit()
     return jsonify({"ok": True})

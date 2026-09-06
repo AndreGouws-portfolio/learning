@@ -1,6 +1,6 @@
 # Orbit CRM
 
-A detailed CRM for tracking contacts, companies, deals, and tasks — runs entirely on your own machine, no accounts, no cloud services, no build step. Optionally connects to **WhatsApp Business** and **Facebook Messenger** so inbound leads from those channels land straight in your Inbox.
+A detailed CRM for tracking contacts, companies, deals, and tasks. Runs locally on your own machine or deployed to a free host (e.g. [Render](https://render.com)) — data lives in a free [Neon](https://neon.tech) Postgres database either way, so it's never lost on a redeploy or restart. Optionally connects to **WhatsApp Business** and **Facebook Messenger** so inbound leads from those channels land straight in your Inbox (note: Meta requires business verification for production use — see the section below before investing time in that part).
 
 ## Features
 
@@ -13,15 +13,27 @@ A detailed CRM for tracking contacts, companies, deals, and tasks — runs entir
 
 ## Tech stack
 
-Plain and dependency-light on purpose:
-
 - [Flask](https://flask.palletsprojects.com) (Python web framework)
-- SQLite — a single file database (`instance/crm.db`), no server to install or configure
+- **Postgres** via [Neon](https://neon.tech) (free tier) — a real database that survives restarts and redeploys, unlike a local file
 - Server-rendered HTML templates (Jinja2) + plain CSS — no Node.js, no npm, no build step
 - A little vanilla JavaScript for the drag-and-drop Kanban board — no frontend framework or CDN
-- `requests` to call the WhatsApp/Messenger APIs, `python-dotenv` to load `.env`
+- `psycopg` to talk to Postgres, `requests` for the WhatsApp/Messenger APIs, `python-dotenv` to load `.env`, `gunicorn` to serve it in production
 
-## Running it locally
+## 1. Set up your database (Neon — free)
+
+The app needs a Postgres connection string before it will start, whether you run it locally or deploy it.
+
+1. Sign up free at [neon.tech](https://neon.tech) (no card required).
+2. Create a project (any name, any region).
+3. On the project dashboard, copy the **connection string** — looks like:
+   ```
+   postgresql://user:password@ep-xxxx.aws.neon.tech/neondb?sslmode=require
+   ```
+4. You'll use this same string everywhere below as `DATABASE_URL` — locally in `.env`, and later on Render.
+
+Tables are created automatically the first time the app starts (and re-checked, harmlessly, on every start after that) — no separate migration step to run.
+
+## 2. Running it locally
 
 You need Python 3.9+ installed. Then, from this folder:
 
@@ -36,18 +48,20 @@ source .venv/bin/activate        # macOS/Linux
 # 3. Install dependencies
 pip install -r requirements.txt
 
-# 4. (Optional) load sample data — companies, contacts, and deals to explore
+# 4. Configure your database connection
+cp .env.example .env
+# then open .env and paste your Neon connection string into DATABASE_URL
+
+# 5. (Optional) load sample data — companies, contacts, and deals to explore
 python seed.py
 
-# 5. Run it
+# 6. Run it
 python app.py
 ```
 
 Then open **http://127.0.0.1:5000** in your browser.
 
-No database server, no login required. The database is created automatically on first run at `instance/crm.db`, and existing databases are upgraded automatically too (e.g. after pulling an update that adds new fields).
-
-To stop the server, press `Ctrl+C` in the terminal. To run it again later, just repeat step 5 (re-activate the virtual environment first if you opened a new terminal: `source .venv/bin/activate`).
+To stop the server, press `Ctrl+C` in the terminal.
 
 ### Desktop mode (always-on-top panel)
 
@@ -59,116 +73,120 @@ python desktop.py
 
 - **Maximize** the window and it un-pins (behaves like a normal full-screen app).
 - **Restore** it back down and it re-pins itself on top automatically.
-- It runs the exact same app as `python app.py` (just embedded in a native window instead of a browser tab) — so ngrok, the webhook setup, everything below still works exactly the same way. Run one or the other, not both at once (both try to use port 5000).
-- **Windows only** for the screen-docking math (it reads your screen's work area, i.e. excluding the taskbar). On macOS/Linux it'll still open always-on-top, just centered with a default size, since this project is set up for your Windows machine.
-- Needs the **Microsoft Edge WebView2 Runtime**, which comes preinstalled on virtually all current Windows 10/11 machines. If `python desktop.py` fails to open a window, grab it from [developer.microsoft.com/microsoft-edge/webview2](https://developer.microsoft.com/en-us/microsoft-edge/webview2/) (the "Evergreen Bootstrapper") and try again.
+- It uses the same `DATABASE_URL`, so it shows the exact same data as your deployed instance (if you have one) — not a separate local copy.
+- **Windows only** for the screen-docking math (it reads your screen's work area, i.e. excluding the taskbar). On macOS/Linux it'll still open always-on-top, just centered with a default size.
+- Needs the **Microsoft Edge WebView2 Runtime**, preinstalled on virtually all current Windows 10/11 machines. If `python desktop.py` fails to open a window, grab it from [developer.microsoft.com/microsoft-edge/webview2](https://developer.microsoft.com/en-us/microsoft-edge/webview2/) and try again.
 
 ### Starting over
 
-If you want a clean slate (delete all data), stop the server and delete the database file:
-
-```bash
-rm instance/crm.db
+To wipe all data, go to your Neon project's **SQL Editor** and run:
+```sql
+DROP TABLE IF EXISTS messages, activities, deals, contacts, companies CASCADE;
 ```
+Tables are recreated empty the next time the app starts.
 
-It will be recreated empty the next time you run `python app.py`.
+## 3. Deploying it (Render — free)
+
+1. Push this repo to your own GitHub account (or use it as-is if already there).
+2. Sign up at [render.com](https://render.com) → **New +** → **Web Service** → connect the repo.
+3. Settings:
+
+   | Field | Value |
+   |---|---|
+   | Runtime | Python 3 |
+   | Build Command | `pip install -r requirements.txt` |
+   | Start Command | `gunicorn app:app` |
+   | Instance Type | Free |
+
+4. In the **Environment** tab, add:
+   ```
+   DATABASE_URL       (your Neon connection string)
+   SECRET_KEY         (any random string)
+   ```
+5. Deploy. Render gives you a permanent URL like `https://your-app.onrender.com`.
+
+**Free tier notes:** the service sleeps after 15 minutes idle (first request after that takes ~30-60s to wake up), and the filesystem is wiped on every redeploy — but since all data now lives in Neon, not on Render's disk, none of that affects your data.
 
 ---
 
-## Connecting WhatsApp Business & Facebook Messenger
+## Connecting WhatsApp Business & Facebook Messenger (optional)
 
-Skip this whole section if you just want the CRM itself — everything above works with zero configuration. This part is only for wiring up the Inbox.
+Skip this whole section if you just want the CRM itself — everything above works without it. This part wires up the Inbox to receive real messages.
+
+**Before you start:** to send/receive real (non-test) messages in production, Meta requires **business verification** — documents proving your business exists (registration papers, etc.). If you're a sole proprietor without that paperwork, you can still fully build and test this with a WhatsApp **test number** (no verification needed), but you won't be able to message arbitrary real customers until you complete verification. Worth knowing before investing time here.
 
 ### The one thing to understand first
 
-Meta (WhatsApp/Messenger) delivers messages by calling **your** server — it doesn't let you poll for them. That means your CRM needs a public HTTPS URL, even though it's running on your own computer. **[ngrok](https://ngrok.com/download)** solves this: it opens a tunnel from a public URL to `localhost:5000` on your machine.
+Meta delivers messages by calling **your server** — it doesn't let you poll for them. That means your CRM needs a public HTTPS URL. If you've deployed to Render (section above), you already have one — use `https://your-app.onrender.com` directly, no extra tunnel needed. If you're only running locally, you'd need something like [ngrok](https://ngrok.com/download) to expose `localhost:5000` temporarily — but a real deployment is the better long-term answer since it doesn't require your laptop to stay on.
 
-The trade-off: your computer and `python app.py` (and ngrok) need to be **running and online** to receive messages. If your laptop is asleep or ngrok isn't running, incoming messages queue up on Meta's side for a while and get delivered once you're back online, but for anything beyond casual/testing use, you'll eventually want this running on an always-on machine instead of your laptop — the code doesn't change, only where you run it.
-
-### 1. Install ngrok
-
-Download from [ngrok.com/download](https://ngrok.com/download), then sign up for a free account and connect it (one-time):
-
-```bash
-ngrok config add-authtoken <your-token-from-the-ngrok-dashboard>
-```
-
-### 2. Create a Meta Developer App
+### 1. Create a Meta Developer App
 
 1. Go to [developers.facebook.com/apps](https://developers.facebook.com/apps) → **Create App** → choose **Business** as the type.
-2. Once created, note the **App Secret**: App Dashboard → **App Settings → Basic** → click "Show" next to App Secret. You'll put this in `.env` as `META_APP_SECRET`.
+2. Note the **App Secret**: App Dashboard → **App Settings → Basic** → click "Show" next to App Secret. This goes in `.env`/Render's env vars as `META_APP_SECRET`.
 
-### 3. Set up WhatsApp
+### 2. Set up WhatsApp
 
-1. In your app's dashboard, find **WhatsApp** in the left sidebar and click **Set up**.
-2. Under **API Setup** you'll see a test phone number already provisioned, plus:
-   - A **temporary access token** (valid ~24h — fine for testing; see the note below for a permanent one)
-   - A **Phone number ID**
-3. Copy both into `.env` as `WHATSAPP_TOKEN` and `WHATSAPP_PHONE_NUMBER_ID`.
-4. In `.env`, make up any random string for `WHATSAPP_VERIFY_TOKEN` (e.g. `orbit-whatsapp-verify-8k2j`) — you'll enter this exact value in the Meta dashboard in step 5.
-5. **Get a permanent token** (recommended once you're past initial testing): create a System User under **Business Settings → Users → System Users**, generate a token for it with `whatsapp_business_messaging` permission, and use that instead — it won't expire every 24 hours.
+1. In your app's dashboard, find **WhatsApp** → **Set up**.
+2. Under **API Setup**: copy the **temporary access token** (`WHATSAPP_TOKEN`, valid ~24h — fine for testing) and the **Phone number ID** (`WHATSAPP_PHONE_NUMBER_ID`, a numeric ID — not your phone number itself).
+3. Make up any random string for `WHATSAPP_VERIFY_TOKEN` — you'll enter the same value in Meta's dashboard next.
+4. For a token that doesn't expire every 24h: **Business Settings → Users → System Users** → create one → generate a token with `whatsapp_business_messaging` permission.
 
-### 4. Set up Messenger
+### 3. Set up Messenger
 
-1. In your app's dashboard, find **Messenger** → **Set up**.
-2. Under **Access Tokens**, connect a Facebook Page you manage and generate a **Page Access Token**. Copy it into `.env` as `MESSENGER_PAGE_TOKEN`.
-3. In `.env`, make up a random string for `MESSENGER_VERIFY_TOKEN` too.
+1. **Messenger** → **Set up** → **Access Tokens** → connect a Facebook Page → generate a **Page Access Token** (`MESSENGER_PAGE_TOKEN`).
+2. Make up a random string for `MESSENGER_VERIFY_TOKEN`.
 
-### 5. Start the app and ngrok together
+### 4. Add the env vars
 
-In one terminal:
-
-```bash
-python app.py
+Wherever you're running the app (local `.env`, or Render's Environment tab):
+```
+WHATSAPP_TOKEN=...
+WHATSAPP_PHONE_NUMBER_ID=...
+WHATSAPP_VERIFY_TOKEN=...
+MESSENGER_PAGE_TOKEN=...
+MESSENGER_VERIFY_TOKEN=...
+META_APP_SECRET=...
 ```
 
-In a second terminal:
-
-```bash
-ngrok http 5000
-```
-
-ngrok prints a **Forwarding** URL that looks like `https://a1b2-3c4d.ngrok-free.app`. That's your public URL for as long as this ngrok session stays open — it changes every time you restart ngrok (unless you're on a paid ngrok plan with a reserved domain), so you'll repeat step 6 below whenever that happens.
-
-### 6. Point Meta's webhooks at your ngrok URL
+### 5. Point Meta's webhooks at your app
 
 **WhatsApp:** App Dashboard → **WhatsApp → Configuration** → Webhook → **Edit**:
-- Callback URL: `https://<your-ngrok-domain>/webhooks/whatsapp`
-- Verify token: the `WHATSAPP_VERIFY_TOKEN` value you put in `.env`
-- Click **Verify and save**, then subscribe to the **messages** field.
+- Callback URL: `https://<your-app-url>/webhooks/whatsapp`
+- Verify token: your `WHATSAPP_VERIFY_TOKEN` value
+- **Verify and save**, then subscribe to the **messages** field.
 
 **Messenger:** App Dashboard → **Messenger → Settings** → Webhooks → **Add callback URL**:
-- Callback URL: `https://<your-ngrok-domain>/webhooks/messenger`
-- Verify token: the `MESSENGER_VERIFY_TOKEN` value
-- Subscribe your Page to the app, and subscribe to the **messages** field.
+- Callback URL: `https://<your-app-url>/webhooks/messenger`
+- Verify token: your `MESSENGER_VERIFY_TOKEN` value
+- Subscribe your Page, then subscribe to the **messages** field.
 
-If verification fails, double check `python app.py` and `ngrok` are both still running, and that the verify token matches exactly.
+If verification fails on a Render deployment specifically, it may be a cold-start timeout (the free tier was asleep) — just click **Verify and save** again.
 
-### 7. Test it
+### 6. Test it
 
-Send a WhatsApp message to your test number, or a Messenger message to your Page, from a different phone/account. It should appear in **Inbox** in the CRM within a couple seconds, with a new contact auto-created if it's someone new. Reply from the Inbox thread to send a message back.
+Send a WhatsApp message to your test number, or a Messenger message to your Page. It should appear in **Inbox** within a couple seconds, auto-creating a contact if new. Reply from the thread to send one back.
 
 ### A few real-world limits (Meta's rules, not this app's)
 
-- **24-hour window:** you can only send freeform replies within 24 hours of the customer's last message. Outside that window, WhatsApp requires a pre-approved message template (Messenger has similar restrictions with some exceptions) — this app doesn't implement template messages, so a reply attempted outside the window will show an error instead of silently failing.
-- **WhatsApp test numbers** can only message a short allow-list of phone numbers until your app passes Meta's App Review / business verification for production access.
-- **Messenger profile names**: fetching a sender's real name requires the `pages_messaging` permission with app review approval in production; until then (or if it fails) new contacts are created as "Messenger Lead" and you can rename them.
+- **24-hour window:** freeform replies only work within 24 hours of the customer's last message; outside that, WhatsApp requires a pre-approved template (not implemented here) — a reply attempted outside the window shows an error rather than failing silently.
+- **WhatsApp test numbers** can only message a short allow-list of phone numbers until business verification is complete.
+- **Messenger profile names** require extra permission/approval to fetch automatically; until then, new contacts are created as "Messenger Lead" — rename them manually.
 
 ### Linking an existing contact manually
 
-If auto-matching doesn't find the right contact (e.g. they messaged from a different number than the one you have on file), open the contact's **Edit** page and fill in their **WhatsApp number** or **Messenger PSID** yourself — future messages from that identifier will then match automatically.
+If auto-matching misses (e.g. a different number than what's on file), open the contact's **Edit** page and fill in their **WhatsApp number** or **Messenger PSID** yourself.
 
 ## Project structure
 
 ```
 app.py                       Entry point — plain browser mode
 desktop.py                   Entry point — always-on-top native window mode
-requirements.txt             Python dependencies (Flask, requests, python-dotenv, pywebview)
+requirements.txt             Python dependencies
 seed.py                      Optional script to load sample data
-.env.example                 Copy to .env to configure WhatsApp/Messenger
+.env.example                 Copy to .env and fill in DATABASE_URL (+ WhatsApp/Messenger if using)
 crm/
   __init__.py                Flask app factory
-  db.py                      SQLite connection, auto-setup, and auto-migration
+  db.py                      Postgres connection (via DATABASE_URL) + auto schema setup
   schema.sql                 Table definitions
   util.py                    Small helpers
   integrations/
@@ -188,12 +206,10 @@ crm/
     style.css                All styling (no framework/CDN)
     app.js                   Dropdown menus, delete confirmations
     kanban.js                Drag-and-drop for the deals board
-instance/                    Created automatically — holds crm.db (not committed to git)
 ```
 
 ## Notes
 
-- Single user, no login — this is meant to run on your own computer for your own use.
-- All data lives in `instance/crm.db`. Back it up like any file (copy it, put it in Dropbox, etc.) if you want to keep it safe.
-- The dev server Flask prints a warning about not being a "production" server — that's expected and totally fine for local personal use.
-- WhatsApp/Messenger credentials live only in your local `.env` file, which is git-ignored — they're never committed.
+- Single user, no login — meant for your own use, whether run locally or deployed.
+- All data lives in your Neon Postgres database — the same data shows up whether you access it via `python app.py`, `python desktop.py`, or your Render deployment, since they all point at the same `DATABASE_URL`.
+- Credentials (`DATABASE_URL`, WhatsApp/Messenger tokens) live in `.env` locally (git-ignored, never committed) or in Render's Environment tab for the deployed copy.

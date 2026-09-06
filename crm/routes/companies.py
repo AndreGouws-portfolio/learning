@@ -14,7 +14,7 @@ def index():
             "SELECT co.*, "
             "(SELECT COUNT(*) FROM contacts WHERE company_id = co.id) AS contact_count, "
             "(SELECT COUNT(*) FROM deals WHERE company_id = co.id) AS deal_count "
-            "FROM companies co WHERE co.name LIKE ? ORDER BY co.name",
+            "FROM companies co WHERE co.name ILIKE %s ORDER BY co.name",
             (f"%{q}%",),
         ).fetchall()
     else:
@@ -38,7 +38,7 @@ def new():
         db = get_db()
         cur = db.execute(
             "INSERT INTO companies (name, website, industry, phone, address, notes) "
-            "VALUES (?, ?, ?, ?, ?, ?)",
+            "VALUES (%s, %s, %s, %s, %s, %s) RETURNING id",
             (
                 name,
                 request.form.get("website") or None,
@@ -48,8 +48,9 @@ def new():
                 request.form.get("notes") or None,
             ),
         )
+        new_id = cur.fetchone()["id"]
         db.commit()
-        return redirect(url_for("companies.detail", company_id=cur.lastrowid))
+        return redirect(url_for("companies.detail", company_id=new_id))
 
     return render_template("companies/form.html", company=None)
 
@@ -57,18 +58,18 @@ def new():
 @bp.route("/<int:company_id>")
 def detail(company_id):
     db = get_db()
-    company = db.execute("SELECT * FROM companies WHERE id = ?", (company_id,)).fetchone()
+    company = db.execute("SELECT * FROM companies WHERE id = %s", (company_id,)).fetchone()
     if company is None:
         return render_template("404.html"), 404
 
     contacts = db.execute(
-        "SELECT * FROM contacts WHERE company_id = ? ORDER BY last_name, first_name", (company_id,)
+        "SELECT * FROM contacts WHERE company_id = %s ORDER BY last_name, first_name", (company_id,)
     ).fetchall()
     deals = db.execute(
-        "SELECT * FROM deals WHERE company_id = ? ORDER BY created_at DESC", (company_id,)
+        "SELECT * FROM deals WHERE company_id = %s ORDER BY created_at DESC", (company_id,)
     ).fetchall()
     activities = db.execute(
-        "SELECT * FROM activities WHERE company_id = ? ORDER BY created_at DESC", (company_id,)
+        "SELECT * FROM activities WHERE company_id = %s ORDER BY created_at DESC", (company_id,)
     ).fetchall()
     return render_template(
         "companies/detail.html", company=company, contacts=contacts, deals=deals, activities=activities
@@ -78,7 +79,7 @@ def detail(company_id):
 @bp.route("/<int:company_id>/edit", methods=["GET", "POST"])
 def edit(company_id):
     db = get_db()
-    company = db.execute("SELECT * FROM companies WHERE id = ?", (company_id,)).fetchone()
+    company = db.execute("SELECT * FROM companies WHERE id = %s", (company_id,)).fetchone()
     if company is None:
         return render_template("404.html"), 404
     company = dict(company)
@@ -90,7 +91,7 @@ def edit(company_id):
             return render_template("companies/form.html", company=request.form, company_id=company_id)
 
         db.execute(
-            "UPDATE companies SET name=?, website=?, industry=?, phone=?, address=?, notes=? WHERE id=?",
+            "UPDATE companies SET name=%s, website=%s, industry=%s, phone=%s, address=%s, notes=%s WHERE id=%s",
             (
                 name,
                 request.form.get("website") or None,
@@ -110,6 +111,6 @@ def edit(company_id):
 @bp.route("/<int:company_id>/delete", methods=["POST"])
 def delete(company_id):
     db = get_db()
-    db.execute("DELETE FROM companies WHERE id = ?", (company_id,))
+    db.execute("DELETE FROM companies WHERE id = %s", (company_id,))
     db.commit()
     return redirect(url_for("companies.index"))

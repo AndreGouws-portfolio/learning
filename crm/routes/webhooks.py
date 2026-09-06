@@ -1,6 +1,6 @@
 import re
-import sqlite3
 
+import psycopg
 from flask import Blueprint, current_app, request
 
 from ..db import get_db
@@ -24,46 +24,47 @@ def _split_name(name, fallback):
 def _find_or_create_whatsapp_contact(db, from_number, profile_name):
     digits = _digits(from_number)
     row = db.execute(
-        "SELECT * FROM contacts WHERE whatsapp_number = ? OR phone LIKE ?",
+        "SELECT * FROM contacts WHERE whatsapp_number = %s OR phone LIKE %s",
         (digits, f"%{digits[-9:]}" if len(digits) >= 9 else digits),
     ).fetchone()
     if row:
         if not row["whatsapp_number"]:
-            db.execute("UPDATE contacts SET whatsapp_number = ? WHERE id = ?", (digits, row["id"]))
+            db.execute("UPDATE contacts SET whatsapp_number = %s WHERE id = %s", (digits, row["id"]))
         return row["id"]
 
     first, last = _split_name(profile_name, "WhatsApp Lead")
     cur = db.execute(
         "INSERT INTO contacts (first_name, last_name, phone, whatsapp_number, notes) "
-        "VALUES (?, ?, ?, ?, ?)",
+        "VALUES (%s, %s, %s, %s, %s) RETURNING id",
         (first, last, from_number, digits, "Auto-created from an inbound WhatsApp message."),
     )
-    return cur.lastrowid
+    return cur.fetchone()["id"]
 
 
 def _find_or_create_messenger_contact(db, psid):
-    row = db.execute("SELECT id FROM contacts WHERE messenger_psid = ?", (psid,)).fetchone()
+    row = db.execute("SELECT id FROM contacts WHERE messenger_psid = %s", (psid,)).fetchone()
     if row:
         return row["id"]
 
     name = messenger.fetch_profile_name(psid)
     first, last = _split_name(name, "Messenger Lead")
     cur = db.execute(
-        "INSERT INTO contacts (first_name, last_name, messenger_psid, notes) VALUES (?, ?, ?, ?)",
+        "INSERT INTO contacts (first_name, last_name, messenger_psid, notes) VALUES (%s, %s, %s, %s) RETURNING id",
         (first, last, psid, "Auto-created from an inbound Messenger message."),
     )
-    return cur.lastrowid
+    return cur.fetchone()["id"]
 
 
 def _store_inbound(db, channel, contact_id, external_id, body, media_url):
     try:
         db.execute(
             "INSERT INTO messages (channel, direction, external_id, contact_id, body, media_url) "
-            "VALUES (?, 'IN', ?, ?, ?, ?)",
+            "VALUES (%s, 'IN', %s, %s, %s, %s)",
             (channel, external_id, contact_id, body, media_url),
         )
-    except sqlite3.IntegrityError:
-        pass  # duplicate delivery of a webhook we've already processed
+        db.commit()
+    except psycopg.IntegrityError:
+        db.rollback()  # duplicate delivery of a webhook we've already processed
 
 
 @bp.route("/whatsapp", methods=["GET"])

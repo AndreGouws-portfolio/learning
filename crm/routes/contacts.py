@@ -25,7 +25,7 @@ def index():
         rows = db.execute(
             "SELECT c.*, co.name AS company_name FROM contacts c "
             "LEFT JOIN companies co ON co.id = c.company_id "
-            "WHERE c.first_name LIKE ? OR c.last_name LIKE ? OR c.email LIKE ? "
+            "WHERE c.first_name ILIKE %s OR c.last_name ILIKE %s OR c.email ILIKE %s "
             "ORDER BY c.last_name, c.first_name",
             (like, like, like),
         ).fetchall()
@@ -54,7 +54,7 @@ def new():
 
         cur = db.execute(
             "INSERT INTO contacts (first_name, last_name, email, phone, title, company_id, notes, "
-            "whatsapp_number, messenger_psid) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            "whatsapp_number, messenger_psid) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING id",
             (
                 first_name,
                 last_name,
@@ -67,8 +67,9 @@ def new():
                 request.form.get("messenger_psid", "").strip() or None,
             ),
         )
+        new_id = cur.fetchone()["id"]
         db.commit()
-        return redirect(url_for("contacts.detail", contact_id=cur.lastrowid))
+        return redirect(url_for("contacts.detail", contact_id=new_id))
 
     return render_template("contacts/form.html", contact=None, companies=_companies(db))
 
@@ -78,17 +79,17 @@ def detail(contact_id):
     db = get_db()
     contact = db.execute(
         "SELECT c.*, co.name AS company_name FROM contacts c "
-        "LEFT JOIN companies co ON co.id = c.company_id WHERE c.id = ?",
+        "LEFT JOIN companies co ON co.id = c.company_id WHERE c.id = %s",
         (contact_id,),
     ).fetchone()
     if contact is None:
         return render_template("404.html"), 404
 
     deals = db.execute(
-        "SELECT * FROM deals WHERE contact_id = ? ORDER BY created_at DESC", (contact_id,)
+        "SELECT * FROM deals WHERE contact_id = %s ORDER BY created_at DESC", (contact_id,)
     ).fetchall()
     activities = db.execute(
-        "SELECT * FROM activities WHERE contact_id = ? ORDER BY created_at DESC", (contact_id,)
+        "SELECT * FROM activities WHERE contact_id = %s ORDER BY created_at DESC", (contact_id,)
     ).fetchall()
     return render_template("contacts/detail.html", contact=contact, deals=deals, activities=activities)
 
@@ -96,7 +97,7 @@ def detail(contact_id):
 @bp.route("/<int:contact_id>/edit", methods=["GET", "POST"])
 def edit(contact_id):
     db = get_db()
-    contact = db.execute("SELECT * FROM contacts WHERE id = ?", (contact_id,)).fetchone()
+    contact = db.execute("SELECT * FROM contacts WHERE id = %s", (contact_id,)).fetchone()
     if contact is None:
         return render_template("404.html"), 404
     contact = dict(contact)
@@ -113,8 +114,8 @@ def edit(contact_id):
             return render_template("contacts/form.html", contact=request.form, companies=_companies(db), contact_id=contact_id)
 
         db.execute(
-            "UPDATE contacts SET first_name=?, last_name=?, email=?, phone=?, title=?, company_id=?, "
-            "notes=?, whatsapp_number=?, messenger_psid=? WHERE id=?",
+            "UPDATE contacts SET first_name=%s, last_name=%s, email=%s, phone=%s, title=%s, company_id=%s, "
+            "notes=%s, whatsapp_number=%s, messenger_psid=%s WHERE id=%s",
             (
                 first_name,
                 last_name,
@@ -137,6 +138,6 @@ def edit(contact_id):
 @bp.route("/<int:contact_id>/delete", methods=["POST"])
 def delete(contact_id):
     db = get_db()
-    db.execute("DELETE FROM contacts WHERE id = ?", (contact_id,))
+    db.execute("DELETE FROM contacts WHERE id = %s", (contact_id,))
     db.commit()
     return redirect(url_for("contacts.index"))
