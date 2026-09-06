@@ -7,7 +7,8 @@ A detailed CRM for tracking contacts, companies, deals, and tasks. Runs locally 
 - **Contacts & Companies** — full records with notes, linked company/contact relationships, and search
 - **Deals pipeline** — drag-and-drop Kanban board across Lead → Qualified → Proposal → Negotiation → Won/Lost, with pipeline value per stage
 - **Tasks & activities** — to-dos, calls, emails, meetings, and notes logged on a timeline against any contact, company, or deal
-- **Calendar** — month view of scheduled follow-ups; click any day to schedule one, optionally linked to a contact, company, or deal
+- **Calendar** — month view of scheduled follow-ups (with a year-at-a-glance view too); click any day to schedule one, optionally linked to a contact, company, or deal
+- **Tasks by due date** — the Tasks page groups open tasks into Overdue, Due today, Due this week, Later, and No due date
 - **Inbox** — WhatsApp and Messenger conversations in one place: incoming messages auto-create or match a contact, and you can reply from inside the CRM
 - **Dashboard** — key metrics, a pipeline-by-stage chart, upcoming tasks, and a recent activity feed
 - **Global search** across contacts, companies, and deals

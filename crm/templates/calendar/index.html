@@ -7,6 +7,7 @@
       <p>Schedule and track follow-ups by date</p>
     </div>
     <div class="actions">
+      <a class="btn btn-outline btn-sm" href="{{ url_for('calendar.year_view', year=year) }}">Year view</a>
       <details class="menu-details" {{ 'open' if open_new }}>
         <summary class="btn btn-primary btn-sm" style="list-style:none; cursor:pointer;">+ Schedule follow-up</summary>
         <div class="card" style="margin-top: 10px; text-align: left;">

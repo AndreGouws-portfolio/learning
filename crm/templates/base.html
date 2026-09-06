@@ -9,7 +9,8 @@
 </head>
 <body>
   <div class="shell">
-    <aside class="sidebar">
+    <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+    <aside class="sidebar" id="sidebar">
       <div class="brand">
         <video class="brand-mark" src="{{ url_for('static', filename='logo.mp4') }}" autoplay muted loop playsinline disablepictureinpicture></video>
         <span>Orbit CRM</span>
@@ -30,6 +31,7 @@
 
     <div class="main">
       <header class="topbar">
+        <button type="button" class="menu-toggle" id="menuToggle" aria-label="Toggle menu">☰</button>
         <form class="search" method="get" action="{{ url_for('search.index') }}">
           <input type="search" name="q" placeholder="Search contacts, companies, deals…" value="{{ request.args.get('q', '') if request.endpoint == 'search.index' else '' }}">
         </form>

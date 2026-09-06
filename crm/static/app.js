@@ -14,6 +14,25 @@ document.addEventListener("click", () => {
   document.querySelectorAll(".menu.open").forEach((m) => m.classList.remove("open"));
 });
 
+// Sidebar menu toggle (narrow/docked windows hide the sidebar by default)
+const menuToggle = document.getElementById("menuToggle");
+const sidebar = document.getElementById("sidebar");
+const sidebarBackdrop = document.getElementById("sidebarBackdrop");
+function closeSidebar() {
+  sidebar.classList.remove("open");
+  sidebarBackdrop.classList.remove("open");
+}
+if (menuToggle && sidebar && sidebarBackdrop) {
+  menuToggle.addEventListener("click", () => {
+    sidebar.classList.toggle("open");
+    sidebarBackdrop.classList.toggle("open");
+  });
+  sidebarBackdrop.addEventListener("click", closeSidebar);
+  sidebar.querySelectorAll(".nav a").forEach((link) => {
+    link.addEventListener("click", closeSidebar);
+  });
+}
+
 // Confirm before any destructive delete form submits
 document.querySelectorAll("form[data-confirm]").forEach((form) => {
   form.addEventListener("submit", (e) => {

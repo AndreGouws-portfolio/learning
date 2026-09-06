@@ -113,6 +113,24 @@ a:hover { text-decoration: underline; }
   border-bottom: 1px solid var(--border);
 }
 
+.menu-toggle {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 15px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.menu-toggle:hover { background: #f5f5f5; }
+
+.sidebar-backdrop { display: none; }
+
 .search { flex: 1; max-width: 380px; }
 .search input {
   width: 100%;
@@ -199,7 +217,28 @@ a:hover { text-decoration: underline; }
 
 @media (max-width: 900px) {
   .grid-2 { grid-template-columns: 1fr; }
-  .sidebar { display: none; }
+
+  .menu-toggle { display: inline-flex; }
+
+  .sidebar {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 50;
+    transform: translateX(-100%);
+    transition: transform 0.2s ease;
+    box-shadow: 4px 0 16px rgba(0, 0, 0, 0.12);
+  }
+  .sidebar.open { transform: translateX(0); }
+
+  .sidebar-backdrop.open {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.3);
+    z-index: 40;
+  }
 }
 
 /* Stat cards */
@@ -608,3 +647,40 @@ tr.row-link:hover { background: #fafafa; }
   .calendar-day { min-height: 70px; }
   .calendar-weekdays span { font-size: 9px; padding: 6px 4px; }
 }
+
+/* Calendar - year view */
+.year-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+}
+@media (max-width: 900px) { .year-grid { grid-template-columns: repeat(2, 1fr); } }
+
+.mini-month {
+  display: block;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px;
+  color: inherit;
+}
+.mini-month:hover { border-color: var(--border-strong); text-decoration: none; }
+.mini-month-label { font-size: 12px; font-weight: 600; margin-bottom: 6px; text-align: center; }
+.mini-month-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+.mini-day {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  color: var(--text-muted);
+  border-radius: 3px;
+}
+.mini-day.out-of-month { color: var(--text-faint); opacity: 0.4; }
+.mini-day.has-items { background: var(--blue-bg); color: var(--blue); font-weight: 600; }
+.mini-day.busy { background: var(--blue); color: #fff; }
+.mini-day.is-today { outline: 1.5px solid var(--accent); outline-offset: -1.5px; }

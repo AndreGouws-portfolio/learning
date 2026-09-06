@@ -90,3 +90,49 @@ def index():
         type_badge=TYPE_BADGE,
         back_url=url_for("calendar.index", year=year, month=month),
     )
+
+
+@bp.route("/year")
+def year_view():
+    db = get_db()
+    today = date.today()
+    year = request.args.get("year", type=int) or today.year
+
+    rows = db.execute(
+        "SELECT due_date, COUNT(*) AS n FROM activities "
+        "WHERE due_date IS NOT NULL AND due_date BETWEEN %s AND %s GROUP BY due_date",
+        (f"{year}-01-01", f"{year}-12-31"),
+    ).fetchall()
+    counts = {r["due_date"][:10]: r["n"] for r in rows}
+
+    cal = calendar_module.Calendar(firstweekday=0)
+    months = []
+    for m in range(1, 13):
+        weeks = cal.monthdatescalendar(year, m)
+        months.append(
+            {
+                "label": date(year, m, 1).strftime("%B"),
+                "month": m,
+                "weeks": [
+                    [
+                        {
+                            "day": d.day,
+                            "in_month": d.month == m,
+                            "is_today": d == today,
+                            "count": counts.get(d.isoformat(), 0),
+                        }
+                        for d in week
+                    ]
+                    for week in weeks
+                ],
+            }
+        )
+
+    return render_template(
+        "calendar/year.html",
+        year=year,
+        months=months,
+        prev_year=year - 1,
+        next_year=year + 1,
+        is_current_year=(year == today.year),
+    )

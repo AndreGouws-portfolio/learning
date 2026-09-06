@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date, datetime, timedelta
 
 from flask import Blueprint, redirect, render_template, request, url_for
 
@@ -16,6 +16,15 @@ _JOIN = (
 )
 
 
+def _due_date(row):
+    if not row["due_date"]:
+        return None
+    try:
+        return datetime.strptime(row["due_date"][:10], "%Y-%m-%d").date()
+    except ValueError:
+        return None
+
+
 @bp.route("/tasks")
 def tasks():
     db = get_db()
@@ -28,8 +37,30 @@ def tasks():
         reverse=True,
     )[:20]
 
+    today = date.today()
+    week_end = today + timedelta(days=7)
+    groups = {"overdue": [], "due_today": [], "this_week": [], "later": [], "no_date": []}
+    for r in pending:
+        d = _due_date(r)
+        if d is None:
+            groups["no_date"].append(r)
+        elif d < today:
+            groups["overdue"].append(r)
+        elif d == today:
+            groups["due_today"].append(r)
+        elif d <= week_end:
+            groups["this_week"].append(r)
+        else:
+            groups["later"].append(r)
+
     open_new = request.args.get("new") == "1"
-    return render_template("tasks/list.html", pending=pending, completed=completed, open_new=open_new)
+    return render_template(
+        "tasks/list.html",
+        pending=pending,
+        completed=completed,
+        groups=groups,
+        open_new=open_new,
+    )
 
 
 @bp.route("/activities/new", methods=["POST"])

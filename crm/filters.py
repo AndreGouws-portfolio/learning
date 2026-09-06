@@ -5,8 +5,8 @@ def currency(value):
     try:
         value = float(value)
     except (TypeError, ValueError):
-        return "$0"
-    return f"${value:,.0f}"
+        return "R0"
+    return f"R{value:,.0f}"
 
 
 def pretty_date(value):
