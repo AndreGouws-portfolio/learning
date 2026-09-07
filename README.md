@@ -20,7 +20,7 @@ to anyone still overdue.
 ## Tech stack
 
 - Next.js (App Router, Server Actions) + TypeScript + Tailwind CSS
-- Prisma + SQLite for storage
+- Prisma + Postgres for storage
 - Nodemailer for outgoing email
 
 ## Getting started
@@ -32,6 +32,9 @@ cp .env.example .env
 
 Edit `.env`:
 
+- `DATABASE_URL` — a Postgres connection string. For local development, the easiest options are
+  a free [Neon](https://neon.tech) project, `supabase start` locally, or `docker run -e
+  POSTGRES_PASSWORD=postgres -p 5432:5432 postgres`.
 - `ADMIN_PASSWORD` — the password you'll use to log in. Pick something strong.
 - `ADMIN_SESSION_SECRET` — a random string used to sign the login session cookie.
   Generate one with `openssl rand -hex 32`.
@@ -39,7 +42,7 @@ Edit `.env`:
   blank to start; the app still works, and "Send reminder" will just show an error instead
   of crashing.
 
-Then create the database and start the app:
+Then create the database tables and start the app:
 
 ```bash
 npx prisma migrate deploy
@@ -80,14 +83,17 @@ month:
 Payments are tracked per calendar month (`YYYY-MM`), so "Mark paid" only affects the current
 month — history for past months is kept on the client's detail page.
 
-## Notes on running this in production
+## Deploying (Vercel)
 
-SQLite stores data in a single file (`prisma/dev.db`). That's fine for running the app
-continuously on a machine or small VPS with persistent disk (e.g. a Docker container with a
-mounted volume), but it will **not** work on stateless/serverless hosting (e.g. Vercel's default
-deployment) since the filesystem isn't persisted between requests. To deploy there, switch the
-Prisma datasource to a hosted Postgres database (e.g. Neon, Supabase, Vercel Postgres) — update
-`prisma/schema.prisma`'s `provider` and `DATABASE_URL`, then re-run `npx prisma migrate deploy`.
+The `build` script (`prisma generate && prisma migrate deploy && next build`) applies any
+pending database migrations automatically on every deploy, so there's nothing extra to run by
+hand once these environment variables are set on the Vercel project (Settings → Environment
+Variables):
 
-Also set `NODE_ENV=production` (handled automatically by `npm run build && npm start`) so the
-login cookie is marked `Secure`, and serve the app over HTTPS.
+- `DATABASE_URL` — from the project's Storage tab → Create Database → Postgres (or any external
+  Postgres provider's connection string)
+- `ADMIN_PASSWORD`, `ADMIN_SESSION_SECRET` — same as local dev, but generate fresh values for
+  production
+- `SMTP_*` / `EMAIL_FROM` — if you want reminder emails to actually send
+
+`NODE_ENV=production` is set automatically by Vercel, which marks the login cookie `Secure`.
