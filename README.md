@@ -32,9 +32,10 @@ cp .env.example .env
 
 Edit `.env`:
 
-- `DATABASE_URL` — a Postgres connection string. For local development, the easiest options are
-  a free [Neon](https://neon.tech) project, `supabase start` locally, or `docker run -e
-  POSTGRES_PASSWORD=postgres -p 5432:5432 postgres`.
+- `DATABASE_URL` and `DIRECT_URL` — a Postgres connection string (same value for both, unless
+  your provider gives you separate pooled/direct URLs — see below). For local development, the
+  easiest options are a free [Neon](https://neon.tech) project, `supabase start` locally, or
+  `docker run -e POSTGRES_PASSWORD=postgres -p 5432:5432 postgres`.
 - `ADMIN_PASSWORD` — the password you'll use to log in. Pick something strong.
 - `ADMIN_SESSION_SECRET` — a random string used to sign the login session cookie.
   Generate one with `openssl rand -hex 32`.
@@ -90,8 +91,12 @@ pending database migrations automatically on every deploy, so there's nothing ex
 hand once these environment variables are set on the Vercel project (Settings → Environment
 Variables):
 
-- `DATABASE_URL` — from the project's Storage tab → Create Database → Postgres (or any external
-  Postgres provider's connection string)
+- `DATABASE_URL` and `DIRECT_URL` — from the project's Storage tab → Create Database → Postgres
+  (or any external Postgres provider). If the provider pools connections through something like
+  PgBouncer or Supabase's Supavisor (a `6543` port is the usual tell), put the **pooled**
+  connection string in `DATABASE_URL` and the **direct** one (often port `5432`) in `DIRECT_URL`
+  — migrations need a direct connection, since a transaction-mode pooler doesn't support the
+  locks `prisma migrate deploy` takes. If your provider doesn't pool, both can be the same value.
 - `ADMIN_PASSWORD`, `ADMIN_SESSION_SECRET` — same as local dev, but generate fresh values for
   production
 - `SMTP_*` / `EMAIL_FROM` — if you want reminder emails to actually send
