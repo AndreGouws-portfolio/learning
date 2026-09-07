@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit contact' if contact else 'New contact' }} · Orbit CRM{% endblock %}
+{% block content %}
+  <div class="page-header"><h1>{{ 'Edit contact' if contact else 'New contact' }}</h1></div>
+
+  <div class="card" style="max-width: 640px;">
+    <div class="card-body">
+      <form method="post">
+        <div class="form-grid">
+          <div class="field">
+            <label for="first_name">First name</label>
+            <input type="text" id="first_name" name="first_name" required value="{{ contact.first_name if contact else '' }}">
+          </div>
+          <div class="field">
+            <label for="last_name">Last name</label>
+            <input type="text" id="last_name" name="last_name" required value="{{ contact.last_name if contact else '' }}">
+          </div>
+          <div class="field">
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" value="{{ contact.email if contact else '' }}">
+          </div>
+          <div class="field">
+            <label for="phone">Phone</label>
+            <input type="tel" id="phone" name="phone" value="{{ contact.phone if contact else '' }}">
+          </div>
+          <div class="field">
+            <label for="title">Job title</label>
+            <input type="text" id="title" name="title" value="{{ contact.title if contact else '' }}">
+          </div>
+          <div class="field">
+            <label for="company_id">Company</label>
+            <select id="company_id" name="company_id">
+              <option value="">No company</option>
+              {% for co in companies %}
+                <option value="{{ co.id }}" {{ 'selected' if contact and contact.company_id|string == co.id|string }}>{{ co.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="field">
+            <label for="whatsapp_number">WhatsApp number</label>
+            <input type="tel" id="whatsapp_number" name="whatsapp_number" placeholder="15551234567"
+                   value="{{ contact.whatsapp_number if contact else '' }}">
+          </div>
+          <div class="field">
+            <label for="messenger_psid">Messenger PSID</label>
+            <input type="text" id="messenger_psid" name="messenger_psid" placeholder="Usually filled in automatically"
+                   value="{{ contact.messenger_psid if contact else '' }}">
+          </div>
+          <div class="field span-2">
+            <label for="notes">Notes</label>
+            <textarea id="notes" name="notes" rows="4">{{ contact.notes if contact else '' }}</textarea>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary">{{ 'Save changes' if contact_id else 'Create contact' }}</button>
+        </div>
+      </form>
+    </div>
+  </div>
+{% endblock %}

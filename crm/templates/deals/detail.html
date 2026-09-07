@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% from "_activity_timeline.html" import timeline %}
+{% from "_quick_add_activity.html" import quick_add %}
+{% block title %}{{ deal.title }} · Orbit CRM{% endblock %}
+{% block content %}
+  <div class="grid-2">
+    <div>
+      <div class="page-header">
+        <div>
+          <h1>{{ deal.title }}</h1>
+          <p>{{ deal.value|currency }}</p>
+        </div>
+        <div class="actions">
+          <a class="btn btn-outline btn-sm" href="{{ url_for('deals.edit', deal_id=deal.id) }}">Edit</a>
+          <form method="post" action="{{ url_for('deals.delete', deal_id=deal.id) }}" data-confirm="Delete this deal? This cannot be undone.">
+            <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+          </form>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h2>Activity</h2>
+          {{ quick_add(deal_id=deal.id) }}
+        </div>
+        <div class="card-body">
+          {{ timeline(activities) }}
+        </div>
+      </div>
+    </div>
+
+    <div class="col-side">
+      <div class="card">
+        <div class="card-body detail-list">
+          <div class="row"><span class="k">Stage</span> <span class="badge">{{ deal.stage|title }}</span></div>
+          <div class="row"><span class="k">Value</span> <strong>{{ deal.value|currency }}</strong></div>
+          <div class="row"><span class="k">Expected close</span> <span>{{ deal.expected_close_date|pretty_date }}</span></div>
+          {% if deal.closed_at %}
+            <div class="row"><span class="k">Closed</span> <span>{{ deal.closed_at|pretty_date }}</span></div>
+          {% endif %}
+          {% if deal.company_id or deal.contact_id %}
+            <div style="border-top:1px solid var(--border); padding-top:10px; display:flex; flex-direction:column; gap:8px;">
+              {% if deal.company_id %}
+                <div>🏢 <a href="{{ url_for('companies.detail', company_id=deal.company_id) }}">{{ deal.company_name }}</a></div>
+              {% endif %}
+              {% if deal.contact_id %}
+                <div>👤 <a href="{{ url_for('contacts.detail', contact_id=deal.contact_id) }}">{{ deal.contact_first_name }} {{ deal.contact_last_name }}</a></div>
+              {% endif %}
+            </div>
+          {% endif %}
+          {% if deal.notes %}<div class="profile-notes">{{ deal.notes }}</div>{% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

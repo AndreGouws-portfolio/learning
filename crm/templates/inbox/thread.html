@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}{{ contact.first_name }} {{ contact.last_name }} · Inbox · Orbit CRM{% endblock %}
+{% block content %}
+  <div class="page-header">
+    <div>
+      <h1>{{ contact.first_name }} {{ contact.last_name }}</h1>
+      <p>
+        <a href="{{ url_for('contacts.detail', contact_id=contact.id) }}">View full contact</a>
+        {% if contact.whatsapp_number %} · WhatsApp: {{ contact.whatsapp_number }}{% endif %}
+      </p>
+    </div>
+    <div class="actions">
+      <a class="btn btn-outline btn-sm" href="{{ url_for('inbox.index') }}">← All conversations</a>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-body">
+      {% if not available_channels %}
+        <p class="subtext" style="margin-bottom:14px;">
+          This contact has no WhatsApp number or Messenger PSID on file, so messages here were
+          likely logged manually or the link wasn't captured. Add one on their
+          <a href="{{ url_for('contacts.edit', contact_id=contact.id) }}">contact edit page</a> to enable replying.
+        </p>
+      {% endif %}
+
+      <div class="chat-thread">
+        {% for m in messages %}
+          <div class="chat-bubble {{ 'out' if m.direction == 'OUT' else 'in' }}">
+            <div class="bubble-text">{{ m.body }}</div>
+            <div class="bubble-meta">
+              {{ 'WhatsApp' if m.channel == 'WHATSAPP' else 'Messenger' }} · {{ m.created_at|pretty_date }}
+              {% if m.direction == 'OUT' and m.status %} · {{ m.status }}{% endif %}
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+
+      {% if available_channels %}
+        <form method="post" action="{{ url_for('inbox.send', contact_id=contact.id) }}" class="reply-form">
+          {% if available_channels|length > 1 %}
+            <select name="channel" style="width:130px;">
+              {% for ch in available_channels %}
+                <option value="{{ ch }}" {{ 'selected' if ch == default_channel }}>
+                  {{ 'WhatsApp' if ch == 'WHATSAPP' else 'Messenger' }}
+                </option>
+              {% endfor %}
+            </select>
+          {% else %}
+            <input type="hidden" name="channel" value="{{ available_channels[0] }}">
+          {% endif %}
+          <input type="text" name="body" placeholder="Type a reply…" required autocomplete="off">
+          <button type="submit" class="btn btn-primary">Send</button>
+        </form>
+        <p class="subtext" style="margin-top:8px;">
+          WhatsApp and Messenger only allow freeform replies within 24 hours of the customer's last
+          message. Outside that window, sending may fail unless you're using a pre-approved template.
+        </p>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

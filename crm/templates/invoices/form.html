@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block title %}New invoice · Orbit CRM{% endblock %}
+{% block content %}
+  <div class="page-header">
+    <div>
+      <h1>New invoice</h1>
+      <p>{{ business.name }}'s standard package is pre-filled below — edit quantities, prices, or line items as needed.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-body">
+      <form method="post">
+        <div class="form-grid">
+          <div class="field">
+            <label for="contact_id">Contact</label>
+            <select id="contact_id" name="contact_id">
+              <option value="">—</option>
+              {% for c in contacts %}
+                <option value="{{ c.id }}" data-company-id="{{ c.company_id or '' }}" {{ 'selected' if invoice.contact_id and invoice.contact_id|string == c.id|string }}>{{ c.first_name }} {{ c.last_name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="field">
+            <label for="company_id">Company</label>
+            <select id="company_id" name="company_id">
+              <option value="">—</option>
+              {% for co in companies %}
+                <option value="{{ co.id }}" {{ 'selected' if invoice.company_id and invoice.company_id|string == co.id|string }}>{{ co.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="field">
+            <label for="issue_date">Issue date</label>
+            <input type="date" id="issue_date" name="issue_date" value="{{ invoice.issue_date }}">
+          </div>
+          <div class="field">
+            <label for="due_date">Due date</label>
+            <input type="date" id="due_date" name="due_date" value="{{ invoice.due_date or '' }}">
+          </div>
+          <div class="field span-2">
+            <label for="notes">Notes (optional, shown on the invoice)</label>
+            <textarea id="notes" name="notes" rows="2">{{ invoice.notes or '' }}</textarea>
+          </div>
+        </div>
+
+        <h2 style="font-size:14px; margin: 4px 0 10px;">Line items</h2>
+        <div style="overflow-x: auto;">
+          <table class="invoice-items-table" id="itemsTable">
+            <thead>
+              <tr><th>Description</th><th style="width:90px;">Qty</th><th style="width:140px;">Unit price (R)</th><th style="width:120px;">Line total</th><th style="width:36px;"></th></tr>
+            </thead>
+            <tbody>
+              {% for desc, qty, price in items %}
+                <tr class="item-row">
+                  <td><input type="text" name="description" value="{{ desc }}" required></td>
+                  <td><input type="number" name="quantity" value="{{ qty }}" step="0.01" min="0"></td>
+                  <td><input type="number" name="unit_price" value="{{ price }}" step="0.01" min="0"></td>
+                  <td class="line-total">R0.00</td>
+                  <td><button type="button" class="remove-row" aria-label="Remove line">✕</button></td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        <button type="button" class="btn btn-outline btn-sm" id="addRow" style="margin-top:10px;">+ Add line item</button>
+
+        <div class="invoice-total-row">
+          <span>Total due</span>
+          <strong id="totalDisplay">R0.00</strong>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary">Save invoice</button>
+        </div>
+      </form>
+    </div>
+  </div>
+{% endblock %}
+{% block scripts %}
+  <script src="{{ url_for('static', filename='invoice.js') }}"></script>
+{% endblock %}

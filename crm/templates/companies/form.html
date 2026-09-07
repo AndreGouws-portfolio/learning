@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit company' if company else 'New company' }} · Orbit CRM{% endblock %}
+{% block content %}
+  <div class="page-header"><h1>{{ 'Edit company' if company else 'New company' }}</h1></div>
+
+  <div class="card" style="max-width: 640px;">
+    <div class="card-body">
+      <form method="post">
+        <div class="form-grid">
+          <div class="field span-2">
+            <label for="name">Company name</label>
+            <input type="text" id="name" name="name" required value="{{ company.name if company else '' }}">
+          </div>
+          <div class="field">
+            <label for="website">Website</label>
+            <input type="text" id="website" name="website" placeholder="https://example.com" value="{{ company.website if company else '' }}">
+          </div>
+          <div class="field">
+            <label for="industry">Industry</label>
+            <input type="text" id="industry" name="industry" value="{{ company.industry if company else '' }}">
+          </div>
+          <div class="field">
+            <label for="phone">Phone</label>
+            <input type="tel" id="phone" name="phone" value="{{ company.phone if company else '' }}">
+          </div>
+          <div class="field">
+            <label for="address">Address</label>
+            <input type="text" id="address" name="address" value="{{ company.address if company else '' }}">
+          </div>
+          <div class="field span-2">
+            <label for="notes">Notes</label>
+            <textarea id="notes" name="notes" rows="4">{{ company.notes if company else '' }}</textarea>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary">{{ 'Save changes' if company_id else 'Create company' }}</button>
+        </div>
+      </form>
+    </div>
+  </div>
+{% endblock %}

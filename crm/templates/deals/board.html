@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Deals · Orbit CRM{% endblock %}
+{% block content %}
+  <div class="page-header">
+    <div>
+      <h1>Deals</h1>
+      <p>{{ deal_count }} deal{{ '' if deal_count == 1 else 's' }} · {{ open_value|currency }} open pipeline</p>
+    </div>
+    <div class="actions">
+      <a class="btn btn-primary" href="{{ url_for('deals.new') }}">+ New deal</a>
+    </div>
+  </div>
+
+  {% if deal_count == 0 %}
+    <div class="empty">
+      <h3>No deals yet</h3>
+      <p>Create your first deal to start tracking the pipeline.</p>
+      <a class="btn btn-primary" href="{{ url_for('deals.new') }}">+ New deal</a>
+    </div>
+  {% else %}
+    <div class="board">
+      {% for stage in stages %}
+        {% set deals = columns[stage] %}
+        <div class="column" data-stage="{{ stage }}">
+          <div class="column-head">
+            <span class="stage-name">{{ stage|title }}</span>
+            <span class="badge count">{{ deals|length }}</span>
+            <span class="total">{{ deals|sum(attribute='value')|currency }}</span>
+          </div>
+          <div class="column-cards">
+            {% for d in deals %}
+              <a class="deal-card" draggable="true" data-deal-id="{{ d.id }}" data-value="{{ d.value }}"
+                 href="{{ url_for('deals.detail', deal_id=d.id) }}">
+                <span class="deal-title">{{ d.title }}</span>
+                <div class="deal-value">{{ d.value|currency }}</div>
+                {% if d.company_name or d.contact_first_name %}
+                  <div class="deal-sub">
+                    {{ d.company_name or '' }}{% if d.company_name and d.contact_first_name %} · {% endif %}{% if d.contact_first_name %}{{ d.contact_first_name }} {{ d.contact_last_name }}{% endif %}
+                  </div>
+                {% endif %}
+              </a>
+            {% endfor %}
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endblock %}
+{% block scripts %}
+  <script src="{{ url_for('static', filename='kanban.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}{{ year }} · Calendar · Orbit CRM{% endblock %}
+{% block content %}
+  <div class="page-header">
+    <div>
+      <h1>Calendar</h1>
+      <p>The whole year at a glance — darker days have more follow-ups scheduled</p>
+    </div>
+    <div class="actions">
+      <a class="btn btn-outline btn-sm" href="{{ url_for('calendar.index') }}">Month view</a>
+    </div>
+  </div>
+
+  <div class="calendar-nav">
+    <a class="btn btn-outline btn-sm" href="{{ url_for('calendar.year_view', year=prev_year) }}">‹ Prev</a>
+    <h2>{{ year }}</h2>
+    <a class="btn btn-outline btn-sm" href="{{ url_for('calendar.year_view', year=next_year) }}">Next ›</a>
+    {% if not is_current_year %}
+      <a class="btn btn-outline btn-sm" href="{{ url_for('calendar.year_view') }}">This year</a>
+    {% endif %}
+  </div>
+
+  <div class="year-grid">
+    {% for m in months %}
+      <a class="mini-month" href="{{ url_for('calendar.index', year=year, month=m.month) }}">
+        <div class="mini-month-label">{{ m.label }}</div>
+        <div class="mini-month-grid">
+          {% for week in m.weeks %}
+            {% for day in week %}
+              <span class="mini-day
+                {{ '' if day.in_month else 'out-of-month' }}
+                {{ 'is-today' if day.is_today else '' }}
+                {{ 'has-items' if day.count else '' }}
+                {{ 'busy' if day.count and day.count > 2 else '' }}">{{ day.day }}</span>
+            {% endfor %}
+          {% endfor %}
+        </div>
+      </a>
+    {% endfor %}
+  </div>
+{% endblock %}
