@@ -88,15 +88,14 @@
       </div>
     {% endif %}
 
-    <div class="invoice-doc-payment">
-      <div class="invoice-doc-label">Payment details</div>
-      <div>{{ business.bank_name }} · {{ business.account_name }} · Acc {{ business.account_number }} · Branch {{ business.branch_code }}</div>
-      {% if business.payment_link %}
+    {% if business.payment_link %}
+      <div class="invoice-doc-payment">
+        <div class="invoice-doc-label">Payment</div>
         <a href="{{ business.payment_link }}" target="_blank" rel="noopener" class="invoice-paystack-badge">
           <img src="{{ url_for('static', filename='paystack-badge.svg') }}" alt="Pay securely with Paystack">
         </a>
-      {% endif %}
-    </div>
+      </div>
+    {% endif %}
 
     <div class="invoice-doc-footer">Thank you for your business.</div>
   </div>

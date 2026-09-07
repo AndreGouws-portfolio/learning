@@ -114,7 +114,7 @@ Tables are recreated empty the next time the app starts.
 
 ## Setting up Invoices
 
-Open `crm/routes/invoices.py` and fill in the `BUSINESS` dict at the top with your real details — email, phone, and banking details (bank name, account name/number, branch code). These show on every invoice you generate, and currently hold `[[TODO]]`-style placeholders.
+Open `crm/routes/invoices.py` and edit the `BUSINESS` dict at the top with your real details — name, email, phone, address, and `payment_link` (your Paystack payment link, shown as a "Pay now" badge on every invoice instead of bank details).
 
 The `DEFAULT_ITEMS` list right below it is the standard package pre-filled on every new invoice (Design, Production & Hosting, free logo, revisions, maintenance — priced at R440/month hosting). Edit it if your standard offer changes; individual invoices can still have items added, removed, or re-priced before saving.
 

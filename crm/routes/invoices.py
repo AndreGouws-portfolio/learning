@@ -15,10 +15,6 @@ BUSINESS = {
     "email": "info@coldstartdigital.co.za",
     "phone": "074 004 2807 / 074 074 0875",
     "address": "Daphne Avenue, Mountainview",
-    "bank_name": "[Your bank]",  # TODO
-    "account_name": "ColdStart Digital",
-    "account_number": "[Your account number]",  # TODO
-    "branch_code": "[Your branch code]",  # TODO
     "payment_link": "https://paystack.shop/pay/gsffth8byw",
 }
 
