@@ -19,7 +19,7 @@ def create_app(test_config=None):
 
     db.init_app(app)
 
-    from .routes import dashboard, contacts, companies, deals, activities, calendar, search, webhooks, inbox
+    from .routes import dashboard, contacts, companies, deals, activities, calendar, invoices, search, webhooks, inbox
 
     app.register_blueprint(dashboard.bp)
     app.register_blueprint(contacts.bp)
@@ -27,6 +27,7 @@ def create_app(test_config=None):
     app.register_blueprint(deals.bp)
     app.register_blueprint(activities.bp)
     app.register_blueprint(calendar.bp)
+    app.register_blueprint(invoices.bp)
     app.register_blueprint(search.bp)
     app.register_blueprint(webhooks.bp)
     app.register_blueprint(inbox.bp)

@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Invoices · Orbit CRM{% endblock %}
+{% block content %}
+  <div class="page-header">
+    <div>
+      <h1>Invoices</h1>
+      <p>{{ invoices|length }} invoice{{ '' if invoices|length == 1 else 's' }}</p>
+    </div>
+    <div class="actions">
+      <a class="btn btn-primary" href="{{ url_for('invoices.new') }}">+ New invoice</a>
+    </div>
+  </div>
+
+  {% if not invoices %}
+    <div class="empty">
+      <h3>No invoices yet</h3>
+      <p>Generate your first invoice for a client.</p>
+      <a class="btn btn-primary" href="{{ url_for('invoices.new') }}">+ New invoice</a>
+    </div>
+  {% else %}
+    <div class="card">
+      <table>
+        <thead>
+          <tr><th>Invoice</th><th>Billed to</th><th>Issue date</th><th>Total</th><th>Status</th></tr>
+        </thead>
+        <tbody>
+          {% for inv in invoices %}
+            <tr class="row-link">
+              <td><a href="{{ url_for('invoices.detail', invoice_id=inv.id) }}"><strong>{{ inv.invoice_number }}</strong></a></td>
+              <td>
+                {% if inv.contact_id %}{{ inv.contact_first_name }} {{ inv.contact_last_name }}{% endif %}
+                {% if inv.company_name %}<div class="subtext">{{ inv.company_name }}</div>{% endif %}
+                {% if not inv.contact_id and not inv.company_name %}—{% endif %}
+              </td>
+              <td>{{ inv.issue_date|pretty_date }}</td>
+              <td>{{ inv.total|currency }}</td>
+              <td>
+                <span class="badge {{ 'badge-green' if inv.status == 'PAID' else ('badge-blue' if inv.status == 'SENT' else '') }}">{{ inv.status|title }}</span>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% endif %}
+{% endblock %}

@@ -10,6 +10,7 @@ A detailed CRM for tracking contacts, companies, deals, and tasks. Runs locally 
 - **Calendar** — month view of scheduled follow-ups (with a year-at-a-glance view too); click any day to schedule one, optionally linked to a contact, company, or deal
 - **Tasks by due date** — the Tasks page groups open tasks into Overdue, Due today, Due this week, Later, and No due date
 - **Inbox** — WhatsApp and Messenger conversations in one place: incoming messages auto-create or match a contact, and you can reply from inside the CRM
+- **Invoices** — generate professional, itemized invoices for a contact or company (pre-filled with your standard package), then print or save as PDF straight from the browser
 - **Dashboard** — key metrics, a pipeline-by-stage chart, upcoming tasks, and a recent activity feed
 - **Global search** across contacts, companies, and deals
 
@@ -111,6 +112,16 @@ Tables are recreated empty the next time the app starts.
 
 ---
 
+## Setting up Invoices
+
+Open `crm/routes/invoices.py` and fill in the `BUSINESS` dict at the top with your real details — email, phone, and banking details (bank name, account name/number, branch code). These show on every invoice you generate, and currently hold `[[TODO]]`-style placeholders.
+
+The `DEFAULT_ITEMS` list right below it is the standard package pre-filled on every new invoice (Design, Production & Hosting, free logo, revisions, maintenance — priced at R440/month hosting). Edit it if your standard offer changes; individual invoices can still have items added, removed, or re-priced before saving.
+
+To generate one: open a contact or company → **+ Invoice** (or **Invoices → + New invoice** from the sidebar) → adjust anything → **Save invoice** → **Print / Save as PDF**.
+
+---
+
 ## Connecting WhatsApp Business & Facebook Messenger (optional)
 
 Skip this whole section if you just want the CRM itself — everything above works without it. This part wires up the Inbox to receive real messages.
@@ -201,6 +212,7 @@ crm/
     deals.py
     activities.py            Tasks + activity timeline (shared across contacts/companies/deals)
     calendar.py              Month view of scheduled follow-ups
+    invoices.py              Generate/edit itemized invoices - edit BUSINESS/DEFAULT_ITEMS here
     search.py
     webhooks.py              Receives inbound WhatsApp/Messenger messages
     inbox.py                 Conversation list, thread view, sending replies

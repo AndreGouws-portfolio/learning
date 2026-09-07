@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% block title %}{{ invoice.invoice_number }} · Orbit CRM{% endblock %}
+{% block content %}
+  <div class="page-header no-print">
+    <div>
+      <h1>{{ invoice.invoice_number }}</h1>
+      <p>Issued {{ invoice.issue_date|pretty_date }}{% if invoice.due_date %} · Due {{ invoice.due_date|pretty_date }}{% endif %}</p>
+    </div>
+    <div class="actions">
+      <form method="post" action="{{ url_for('invoices.set_status', invoice_id=invoice.id) }}">
+        <select name="status" onchange="this.form.submit()">
+          <option value="DRAFT" {{ 'selected' if invoice.status == 'DRAFT' }}>Draft</option>
+          <option value="SENT" {{ 'selected' if invoice.status == 'SENT' }}>Sent</option>
+          <option value="PAID" {{ 'selected' if invoice.status == 'PAID' }}>Paid</option>
+        </select>
+      </form>
+      <a class="btn btn-outline btn-sm" href="{{ url_for('invoices.edit', invoice_id=invoice.id) }}">Edit</a>
+      <button type="button" class="btn btn-outline btn-sm" onclick="window.print()">Print / Save as PDF</button>
+      <form method="post" action="{{ url_for('invoices.delete', invoice_id=invoice.id) }}" data-confirm="Delete this invoice? This cannot be undone.">
+        <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="invoice-doc">
+    <div class="invoice-doc-head">
+      <div class="invoice-doc-brand">
+        <div class="invoice-logo-placeholder">{{ business.name|initials }}</div>
+        <div>
+          <div class="invoice-brand-name">{{ business.name }}</div>
+          <div class="invoice-brand-tagline">{{ business.tagline }}</div>
+        </div>
+      </div>
+      <div class="invoice-doc-meta">
+        <h2>INVOICE</h2>
+        <div><span class="k">Invoice #</span> {{ invoice.invoice_number }}</div>
+        <div><span class="k">Issue date</span> {{ invoice.issue_date|pretty_date }}</div>
+        {% if invoice.due_date %}<div><span class="k">Due date</span> {{ invoice.due_date|pretty_date }}</div>{% endif %}
+        <div><span class="k">Status</span> {{ invoice.status|title }}</div>
+      </div>
+    </div>
+
+    <div class="invoice-doc-parties">
+      <div>
+        <div class="invoice-doc-label">From</div>
+        <div><strong>{{ business.name }}</strong></div>
+        <div>{{ business.address }}</div>
+        <div>{{ business.email }}</div>
+        <div>{{ business.phone }}</div>
+      </div>
+      <div>
+        <div class="invoice-doc-label">Bill to</div>
+        {% if invoice.contact_id %}<div><strong>{{ invoice.contact_first_name }} {{ invoice.contact_last_name }}</strong></div>{% endif %}
+        {% if invoice.company_name %}<div>{{ invoice.company_name }}</div>{% endif %}
+        {% if invoice.contact_email %}<div>{{ invoice.contact_email }}</div>{% endif %}
+        {% if invoice.company_address %}<div>{{ invoice.company_address }}</div>{% endif %}
+        {% if not invoice.contact_id and not invoice.company_name %}<div>—</div>{% endif %}
+      </div>
+    </div>
+
+    <table class="invoice-doc-table">
+      <thead>
+        <tr><th>Description</th><th>Qty</th><th>Unit price</th><th>Amount</th></tr>
+      </thead>
+      <tbody>
+        {% for item in items %}
+          <tr>
+            <td>{{ item.description }}</td>
+            <td>{{ item.quantity|int if item.quantity == item.quantity|int else item.quantity }}</td>
+            <td>{{ item.unit_price|currency if item.unit_price else 'Free' }}</td>
+            <td>{{ (item.quantity * item.unit_price)|currency if item.unit_price else 'Included' }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+      <tfoot>
+        <tr class="invoice-doc-total">
+          <td colspan="3">Total due</td>
+          <td>{{ total|currency }}</td>
+        </tr>
+      </tfoot>
+    </table>
+
+    {% if invoice.notes %}
+      <div class="invoice-doc-notes">
+        <div class="invoice-doc-label">Notes</div>
+        <p>{{ invoice.notes }}</p>
+      </div>
+    {% endif %}
+
+    <div class="invoice-doc-payment">
+      <div class="invoice-doc-label">Payment details</div>
+      <div>{{ business.bank_name }} · {{ business.account_name }} · Acc {{ business.account_number }} · Branch {{ business.branch_code }}</div>
+    </div>
+
+    <div class="invoice-doc-footer">Thank you for your business.</div>
+  </div>
+{% endblock %}

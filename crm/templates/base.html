@@ -26,6 +26,7 @@
         <a href="{{ url_for('deals.index') }}" class="{{ 'active' if request.blueprint == 'deals' }}">Deals</a>
         <a href="{{ url_for('activities.tasks') }}" class="{{ 'active' if request.blueprint == 'activities' }}">Tasks</a>
         <a href="{{ url_for('calendar.index') }}" class="{{ 'active' if request.blueprint == 'calendar' }}">Calendar</a>
+        <a href="{{ url_for('invoices.index') }}" class="{{ 'active' if request.blueprint == 'invoices' }}">Invoices</a>
       </nav>
     </aside>
 
@@ -43,6 +44,7 @@
               <a href="{{ url_for('companies.new') }}">Company</a>
               <a href="{{ url_for('deals.new') }}">Deal</a>
               <a href="{{ url_for('activities.tasks', new=1) }}">Task</a>
+              <a href="{{ url_for('invoices.new') }}">Invoice</a>
             </div>
           </div>
         </div>

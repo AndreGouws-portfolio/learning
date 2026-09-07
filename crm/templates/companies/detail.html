@@ -11,6 +11,7 @@
           {% if company.industry %}<p>{{ company.industry }}</p>{% endif %}
         </div>
         <div class="actions">
+          <a class="btn btn-outline btn-sm" href="{{ url_for('invoices.new', company_id=company.id) }}">+ Invoice</a>
           <a class="btn btn-outline btn-sm" href="{{ url_for('companies.edit', company_id=company.id) }}">Edit</a>
           <form method="post" action="{{ url_for('companies.delete', company_id=company.id) }}" data-confirm="Delete this company? Linked contacts and deals will be kept, unlinked.">
             <button type="submit" class="btn btn-danger btn-sm">Delete</button>
