@@ -738,7 +738,7 @@ tr.row-link:hover { background: #fafafa; }
   width: 48px;
   height: 48px;
   border-radius: 8px;
-  background: var(--accent);
+  background: #000;
   color: var(--accent-contrast);
   display: flex;
   align-items: center;
@@ -746,6 +746,10 @@ tr.row-link:hover { background: #fafafa; }
   font-weight: 700;
   font-size: 15px;
   flex-shrink: 0;
+}
+.invoice-logo-placeholder img {
+  width: 30px;
+  height: 30px;
 }
 .invoice-brand-name { font-size: 17px; font-weight: 700; }
 .invoice-brand-tagline { font-size: 12px; color: var(--text-muted); max-width: 260px; }
@@ -780,6 +784,8 @@ tr.row-link:hover { background: #fafafa; }
 .invoice-doc-table th:not(:first-child), .invoice-doc-table td:not(:first-child) { text-align: right; }
 .invoice-doc-total td { font-weight: 700; font-size: 15px; border-bottom: none; padding-top: 14px; }
 .invoice-doc-notes, .invoice-doc-payment { margin-top: 22px; font-size: 13px; }
+.invoice-paystack-badge { display: inline-block; margin-top: 10px; }
+.invoice-paystack-badge img { height: 40px; width: auto; display: block; }
 .invoice-doc-footer {
   margin-top: 32px;
   text-align: center;

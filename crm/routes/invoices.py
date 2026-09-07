@@ -19,6 +19,7 @@ BUSINESS = {
     "account_name": "ColdStart Digital",
     "account_number": "[Your account number]",  # TODO
     "branch_code": "[Your branch code]",  # TODO
+    "payment_link": "https://paystack.shop/pay/gsffth8byw",
 }
 
 # Default itemized breakdown for ColdStart Digital's standard monthly package.

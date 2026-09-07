@@ -25,7 +25,9 @@
   <div class="invoice-doc">
     <div class="invoice-doc-head">
       <div class="invoice-doc-brand">
-        <div class="invoice-logo-placeholder">{{ business.name|initials }}</div>
+        <div class="invoice-logo-placeholder">
+          <img src="{{ url_for('static', filename='logo-mark.svg') }}" alt="{{ business.name }} logo">
+        </div>
         <div>
           <div class="invoice-brand-name">{{ business.name }}</div>
           <div class="invoice-brand-tagline">{{ business.tagline }}</div>
@@ -90,6 +92,11 @@
     <div class="invoice-doc-payment">
       <div class="invoice-doc-label">Payment details</div>
       <div>{{ business.bank_name }} · {{ business.account_name }} · Acc {{ business.account_number }} · Branch {{ business.branch_code }}</div>
+      {% if business.payment_link %}
+        <a href="{{ business.payment_link }}" target="_blank" rel="noopener" class="invoice-paystack-badge">
+          <img src="{{ url_for('static', filename='paystack-badge.svg') }}" alt="Pay securely with Paystack">
+        </a>
+      {% endif %}
     </div>
 
     <div class="invoice-doc-footer">Thank you for your business.</div>
