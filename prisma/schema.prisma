@@ -1,0 +1,53 @@
+// Prisma schema for the subscription tracker.
+// Learn more: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Client {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  service   String? // what they're paying for, e.g. "Website hosting"
+  amount    Float
+  currency  String   @default("USD")
+  dueDay    Int      @default(1) // day of the month payment is due (1-28)
+  active    Boolean  @default(true)
+  notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  payments  Payment[]
+  reminders Reminder[]
+}
+
+model Payment {
+  id        String   @id @default(cuid())
+  clientId  String
+  client    Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  period    String // billing period this payment covers, "YYYY-MM"
+  amount    Float
+  paidAt    DateTime @default(now())
+  notes     String?
+  createdAt DateTime @default(now())
+
+  @@unique([clientId, period])
+  @@index([clientId])
+}
+
+model Reminder {
+  id       String   @id @default(cuid())
+  clientId String
+  client   Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  period   String // billing period the reminder was about, "YYYY-MM"
+  sentAt   DateTime @default(now())
+
+  @@index([clientId])
+}
