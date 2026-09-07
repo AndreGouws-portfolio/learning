@@ -172,41 +172,6 @@ def detail(invoice_id):
     return render_template("invoices/detail.html", invoice=invoice, items=items, total=total, business=BUSINESS)
 
 
-@bp.route("/<int:invoice_id>/edit", methods=["GET", "POST"])
-def edit(invoice_id):
-    db = get_db()
-    invoice, items = _get_invoice(db, invoice_id)
-    if invoice is None:
-        return render_template("404.html"), 404
-
-    if request.method == "POST":
-        contact_id = request.form.get("contact_id") or None
-        company_id = request.form.get("company_id") or None
-        issue_date = request.form.get("issue_date") or invoice["issue_date"]
-        due_date = request.form.get("due_date") or None
-        notes = request.form.get("notes") or None
-        new_items = _parse_items(request.form)
-
-        db.execute(
-            "UPDATE invoices SET contact_id=%s, company_id=%s, issue_date=%s, due_date=%s, notes=%s "
-            "WHERE id=%s",
-            (contact_id, company_id, issue_date, due_date, notes, invoice_id),
-        )
-        _save_items(db, invoice_id, new_items)
-        db.commit()
-        return redirect(url_for("invoices.detail", invoice_id=invoice_id))
-
-    return render_template(
-        "invoices/form.html",
-        invoice=invoice,
-        items=[(i["description"], i["quantity"], i["unit_price"]) for i in items],
-        contacts=_contacts(db),
-        companies=_companies(db),
-        business=BUSINESS,
-        invoice_id=invoice_id,
-    )
-
-
 @bp.route("/<int:invoice_id>/status", methods=["POST"])
 def set_status(invoice_id):
     db = get_db()

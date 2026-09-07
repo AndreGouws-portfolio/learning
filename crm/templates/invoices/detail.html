@@ -14,7 +14,6 @@
           <option value="PAID" {{ 'selected' if invoice.status == 'PAID' }}>Paid</option>
         </select>
       </form>
-      <a class="btn btn-outline btn-sm" href="{{ url_for('invoices.edit', invoice_id=invoice.id) }}">Edit</a>
       <button type="button" class="btn btn-outline btn-sm" onclick="window.print()">Print / Save as PDF</button>
       <form method="post" action="{{ url_for('invoices.delete', invoice_id=invoice.id) }}" data-confirm="Delete this invoice? This cannot be undone.">
         <button type="submit" class="btn btn-danger btn-sm">Delete</button>
