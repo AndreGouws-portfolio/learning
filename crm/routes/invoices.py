@@ -12,9 +12,9 @@ bp = Blueprint("invoices", __name__, url_prefix="/invoices")
 BUSINESS = {
     "name": "ColdStart Digital",
     "tagline": "Website Design, Development & Hosting for South African Businesses",
-    "email": "[Add your email address]",  # TODO: replace with your real email
-    "phone": "[Add your phone number]",  # TODO
-    "address": "South Africa",  # TODO: add a full address if you want one shown
+    "email": "info@coldstartdigital.co.za",
+    "phone": "074 004 2807 / 074 074 0875",
+    "address": "Daphne Avenue, Mountainview",
     "bank_name": "[Your bank]",  # TODO
     "account_name": "ColdStart Digital",
     "account_number": "[Your account number]",  # TODO
