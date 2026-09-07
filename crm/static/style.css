@@ -784,8 +784,28 @@ tr.row-link:hover { background: #fafafa; }
 .invoice-doc-table th:not(:first-child), .invoice-doc-table td:not(:first-child) { text-align: right; }
 .invoice-doc-total td { font-weight: 700; font-size: 15px; border-bottom: none; padding-top: 14px; }
 .invoice-doc-notes, .invoice-doc-payment { margin-top: 22px; font-size: 13px; }
-.invoice-paystack-badge { display: inline-block; margin-top: 10px; }
-.invoice-paystack-badge img { height: 40px; width: auto; display: block; }
+.invoice-paystack-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 10px;
+  text-decoration: none;
+}
+.invoice-paystack-badge img { height: 64px; width: auto; display: block; }
+.invoice-pay-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--accent);
+}
+.invoice-paystack-badge:hover .invoice-pay-cta { text-decoration: underline; }
+.invoice-pay-cta .arrow {
+  font-size: 18px;
+  transition: transform 0.15s ease;
+}
+.invoice-paystack-badge:hover .invoice-pay-cta .arrow { transform: translateX(4px); }
 .invoice-doc-footer {
   margin-top: 32px;
   text-align: center;
