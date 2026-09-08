@@ -2,11 +2,12 @@
 // Learn more: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider      = "prisma-client"
-  output        = "../src/generated/prisma"
-  // "native" covers local dev; Vercel's serverless functions run on
-  // Amazon Linux, which needs the rhel engine binary explicitly.
-  binaryTargets = ["native", "rhel-openssl-3.0.x"]
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+  // Query through a driver adapter (see src/lib/prisma.ts) instead of
+  // Prisma's native query engine binary — sidesteps needing the right
+  // platform-specific engine bundled into the serverless deployment.
+  engineType = "client"
 }
 
 datasource db {
