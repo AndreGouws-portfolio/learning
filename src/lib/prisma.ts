@@ -6,8 +6,8 @@ const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
 };
 
-const databaseUrl = process.env.DATABASE_URL;
-const hostname = databaseUrl ? new URL(databaseUrl).hostname : "";
+const parsedUrl = process.env.DATABASE_URL ? new URL(process.env.DATABASE_URL) : undefined;
+const hostname = parsedUrl?.hostname ?? "";
 
 function resolveSsl(): { ca: string } | undefined {
   if (hostname === "localhost" || hostname === "127.0.0.1") return undefined;
@@ -21,7 +21,16 @@ function resolveSsl(): { ca: string } | undefined {
   return undefined;
 }
 
-const adapter = new PrismaPg({ connectionString: databaseUrl, ssl: resolveSsl() });
+const ssl = resolveSsl();
+if (ssl && parsedUrl) {
+  // pg's connection-string parser derives its own `ssl` object from
+  // `sslmode` and applies it *after* (overwriting) any explicit ssl config
+  // passed alongside connectionString — so sslmode=require silently wins
+  // over our CA. Strip it to let our explicit config take effect.
+  parsedUrl.searchParams.delete("sslmode");
+}
+
+const adapter = new PrismaPg({ connectionString: parsedUrl?.toString(), ssl });
 
 export const prisma = globalForPrisma.prisma ?? new PrismaClient({ adapter });
 
