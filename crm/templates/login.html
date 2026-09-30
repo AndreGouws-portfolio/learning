@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Log in · Orbit CRM</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
+</head>
+<body>
+  <div class="login-page">
+    <div class="login-card">
+      <div class="brand login-brand">
+        <video class="brand-mark" src="{{ url_for('static', filename='logo.mp4') }}" autoplay muted loop playsinline disablepictureinpicture></video>
+        <span>Orbit CRM</span>
+      </div>
+
+      {% with messages = get_flashed_messages() %}
+        {% if messages %}
+          <div class="flash flash-error">{{ messages[0] }}</div>
+        {% endif %}
+      {% endwith %}
+
+      <form method="post">
+        <input type="hidden" name="next" value="{{ next }}">
+        <div class="field">
+          <label for="username">Username</label>
+          <input type="text" id="username" name="username" required autofocus autocomplete="username">
+        </div>
+        <div class="field">
+          <label for="password">Password</label>
+          <input type="password" id="password" name="password" required autocomplete="current-password">
+        </div>
+        <button type="submit" class="btn btn-primary" style="width:100%;">Log in</button>
+      </form>
+    </div>
+  </div>
+</body>
+</html>

@@ -19,6 +19,10 @@ def create_app(test_config=None):
 
     db.init_app(app)
 
+    from . import auth
+
+    auth.init_app(app)
+
     from .routes import dashboard, contacts, companies, deals, activities, calendar, invoices, search, webhooks, inbox
 
     app.register_blueprint(dashboard.bp)

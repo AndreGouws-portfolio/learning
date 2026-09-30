@@ -47,6 +47,10 @@ a:hover { text-decoration: underline; }
   border-right: 1px solid var(--border);
   display: flex;
   flex-direction: column;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
 }
 
 .brand {
@@ -826,4 +830,32 @@ tr.row-link:hover { background: #fafafa; }
   .content { padding: 0; max-width: none; }
   .invoice-doc { border: none; padding: 0; }
   body { background: #fff; }
+}
+
+.sidebar-logout { margin-top: auto; padding: 16px; }
+
+/* Login */
+.flash-error { background: var(--red-bg); color: var(--red); }
+
+.login-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.login-card {
+  width: 100%;
+  max-width: 320px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 28px;
+}
+.login-brand {
+  justify-content: center;
+  border-bottom: none;
+  padding: 0 0 20px;
+  height: auto;
+  font-size: 16px;
 }

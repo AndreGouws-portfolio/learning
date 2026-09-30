@@ -28,6 +28,9 @@
         <a href="{{ url_for('calendar.index') }}" class="{{ 'active' if request.blueprint == 'calendar' }}">Calendar</a>
         <a href="{{ url_for('invoices.index') }}" class="{{ 'active' if request.blueprint == 'invoices' }}">Invoices</a>
       </nav>
+      <form method="post" action="{{ url_for('auth.logout') }}" class="sidebar-logout">
+        <button type="submit" class="btn btn-outline btn-sm" style="width:100%;">Log out</button>
+      </form>
     </aside>
 
     <div class="main">

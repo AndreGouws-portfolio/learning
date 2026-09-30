@@ -51,9 +51,9 @@ source .venv/bin/activate        # macOS/Linux
 # 3. Install dependencies
 pip install -r requirements.txt
 
-# 4. Configure your database connection
+# 4. Configure your database connection and login
 cp .env.example .env
-# then open .env and paste your Neon connection string into DATABASE_URL
+# then open .env and fill in DATABASE_URL, SECRET_KEY, ADMIN_USERNAME, ADMIN_PASSWORD
 
 # 5. (Optional) load sample data — companies, contacts, and deals to explore
 python seed.py
@@ -105,6 +105,8 @@ Tables are recreated empty the next time the app starts.
    ```
    DATABASE_URL       (your Neon connection string)
    SECRET_KEY         (any random string)
+   ADMIN_USERNAME     (whatever you want to log in with)
+   ADMIN_PASSWORD     (whatever you want to log in with)
    ```
 5. Deploy. Render gives you a permanent URL like `https://your-app.onrender.com`.
 
@@ -196,10 +198,11 @@ app.py                       Entry point — plain browser mode
 desktop.py                   Entry point — always-on-top native window mode
 requirements.txt             Python dependencies
 seed.py                      Optional script to load sample data
-.env.example                 Copy to .env and fill in DATABASE_URL (+ WhatsApp/Messenger if using)
+.env.example                 Copy to .env and fill in DATABASE_URL, login, etc. (+ WhatsApp/Messenger if using)
 crm/
   __init__.py                Flask app factory
   db.py                      Postgres connection (via DATABASE_URL) + auto schema setup
+  auth.py                    Login/logout + the before_request login gate
   schema.sql                 Table definitions
   util.py                    Small helpers
   integrations/
@@ -225,6 +228,6 @@ crm/
 
 ## Notes
 
-- Single user, no login — meant for your own use, whether run locally or deployed.
+- Single user — logs in with the `ADMIN_USERNAME`/`ADMIN_PASSWORD` you set, meant for your own use whether run locally or deployed. There's no separate account system; anyone with those two values has full access.
 - All data lives in your Neon Postgres database — the same data shows up whether you access it via `python app.py`, `python desktop.py`, or your Render deployment, since they all point at the same `DATABASE_URL`.
-- Credentials (`DATABASE_URL`, WhatsApp/Messenger tokens) live in `.env` locally (git-ignored, never committed) or in Render's Environment tab for the deployed copy.
+- Credentials (`DATABASE_URL`, login, WhatsApp/Messenger tokens) live in `.env` locally (git-ignored, never committed) or in Render's Environment tab for the deployed copy.
