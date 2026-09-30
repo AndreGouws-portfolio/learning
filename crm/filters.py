@@ -20,9 +20,7 @@ def pretty_date(value):
             return value
     if not hasattr(value, "strftime"):
         return str(value)
-    # Avoid %-d / %#d (no-leading-zero day) - those are platform-specific
-    # strftime extensions (glibc only) and raise ValueError on Windows.
-    return f"{value.strftime('%b')} {value.day}, {value.year}"
+    return value.isoformat()
 
 
 def initials(name):
