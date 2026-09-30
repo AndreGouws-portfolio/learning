@@ -52,6 +52,19 @@ def index():
     for r in rows:
         by_date.setdefault(r["due_date"][:10], []).append(r)
 
+    sub_rows = db.execute(
+        "SELECT s.*, c.first_name AS contact_first_name, c.last_name AS contact_last_name, "
+        "co.name AS company_name FROM subscriptions s "
+        "LEFT JOIN contacts c ON c.id = s.contact_id "
+        "LEFT JOIN companies co ON co.id = s.company_id "
+        "WHERE s.status = 'ACTIVE' AND s.next_due_date BETWEEN %s AND %s "
+        "ORDER BY s.next_due_date",
+        (grid_start, grid_end),
+    ).fetchall()
+    subs_by_date = {}
+    for r in sub_rows:
+        subs_by_date.setdefault(r["next_due_date"][:10], []).append(r)
+
     day_grid = [
         [
             {
@@ -60,6 +73,7 @@ def index():
                 "in_month": d.month == month,
                 "is_today": d == today,
                 "activities": by_date.get(d.isoformat(), []),
+                "subscriptions": subs_by_date.get(d.isoformat(), []),
             }
             for d in week
         ]
@@ -105,6 +119,13 @@ def year_view():
     ).fetchall()
     counts = {r["due_date"][:10]: r["n"] for r in rows}
 
+    sub_date_rows = db.execute(
+        "SELECT next_due_date FROM subscriptions "
+        "WHERE status = 'ACTIVE' AND next_due_date BETWEEN %s AND %s",
+        (f"{year}-01-01", f"{year}-12-31"),
+    ).fetchall()
+    sub_dates = {r["next_due_date"][:10] for r in sub_date_rows}
+
     cal = calendar_module.Calendar(firstweekday=0)
     months = []
     for m in range(1, 13):
@@ -120,6 +141,7 @@ def year_view():
                             "in_month": d.month == m,
                             "is_today": d == today,
                             "count": counts.get(d.isoformat(), 0),
+                            "has_sub": d.isoformat() in sub_dates,
                         }
                         for d in week
                     ]

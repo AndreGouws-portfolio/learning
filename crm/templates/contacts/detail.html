@@ -15,6 +15,7 @@
             <a class="btn btn-outline btn-sm" href="{{ url_for('inbox.thread', contact_id=contact.id) }}">💬 Message</a>
           {% endif %}
           <a class="btn btn-outline btn-sm" href="{{ url_for('invoices.new', contact_id=contact.id) }}">+ Invoice</a>
+          <a class="btn btn-outline btn-sm" href="{{ url_for('subscriptions.new', contact_id=contact.id) }}">+ Subscription</a>
           <a class="btn btn-outline btn-sm" href="{{ url_for('contacts.edit', contact_id=contact.id) }}">Edit</a>
           <form method="post" action="{{ url_for('contacts.delete', contact_id=contact.id) }}" data-confirm="Delete this contact? This cannot be undone.">
             <button type="submit" class="btn btn-danger btn-sm">Delete</button>

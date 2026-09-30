@@ -85,6 +85,19 @@ CREATE TABLE IF NOT EXISTS invoice_items (
     position INTEGER NOT NULL DEFAULT 0
 );
 
+CREATE TABLE IF NOT EXISTS subscriptions (
+    id SERIAL PRIMARY KEY,
+    name TEXT NOT NULL,
+    contact_id INTEGER REFERENCES contacts (id) ON DELETE SET NULL,
+    company_id INTEGER REFERENCES companies (id) ON DELETE SET NULL,
+    amount REAL NOT NULL DEFAULT 0,
+    billing_cycle TEXT NOT NULL DEFAULT 'MONTHLY' CHECK (billing_cycle IN ('MONTHLY', 'YEARLY')),
+    next_due_date TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'ACTIVE' CHECK (status IN ('ACTIVE', 'PAUSED', 'CANCELLED')),
+    notes TEXT,
+    created_at TEXT NOT NULL DEFAULT to_char(timezone('utc', now()), 'YYYY-MM-DD HH24:MI:SS')
+);
+
 CREATE INDEX IF NOT EXISTS idx_contacts_company ON contacts (company_id);
 CREATE INDEX IF NOT EXISTS idx_contacts_whatsapp ON contacts (whatsapp_number);
 CREATE INDEX IF NOT EXISTS idx_contacts_messenger ON contacts (messenger_psid);
@@ -102,3 +115,6 @@ CREATE INDEX IF NOT EXISTS idx_activities_due_date ON activities (due_date);
 CREATE INDEX IF NOT EXISTS idx_invoices_contact ON invoices (contact_id);
 CREATE INDEX IF NOT EXISTS idx_invoices_company ON invoices (company_id);
 CREATE INDEX IF NOT EXISTS idx_invoice_items_invoice ON invoice_items (invoice_id);
+CREATE INDEX IF NOT EXISTS idx_subscriptions_contact ON subscriptions (contact_id);
+CREATE INDEX IF NOT EXISTS idx_subscriptions_company ON subscriptions (company_id);
+CREATE INDEX IF NOT EXISTS idx_subscriptions_due_date ON subscriptions (next_due_date);

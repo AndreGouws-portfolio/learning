@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% block title %}Subscriptions · Orbit CRM{% endblock %}
+{% block content %}
+  <div class="page-header">
+    <div>
+      <h1>Subscriptions</h1>
+      <p>{{ active_count }} active subscription{{ '' if active_count == 1 else 's' }}</p>
+    </div>
+    <div class="actions">
+      <a class="btn btn-primary" href="{{ url_for('subscriptions.new') }}">+ New subscription</a>
+    </div>
+  </div>
+
+  <div class="stats">
+    <div class="stat-card">
+      <div class="stat-icon">R</div>
+      <div><div class="stat-label">Monthly recurring revenue</div><div class="stat-value">{{ mrr|currency }}</div></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">🔁</div>
+      <div><div class="stat-label">Active subscriptions</div><div class="stat-value">{{ active_count }}</div></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">⏰</div>
+      <div><div class="stat-label">Due this week</div><div class="stat-value">{{ due_this_week_count }}</div></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">⚠</div>
+      <div><div class="stat-label">Overdue</div><div class="stat-value">{{ overdue_count }}</div></div>
+    </div>
+  </div>
+
+  {% macro sub_row(s) %}
+    <div class="sub-row">
+      <div class="sub-row-main">
+        <div class="sub-row-title">
+          {% if s.contact_id %}
+            <a href="{{ url_for('contacts.detail', contact_id=s.contact_id) }}">{{ s.contact_first_name }} {{ s.contact_last_name }}</a>
+          {% elif s.company_id %}
+            <a href="{{ url_for('companies.detail', company_id=s.company_id) }}">{{ s.company_name }}</a>
+          {% else %}
+            <span>—</span>
+          {% endif %}
+        </div>
+        <div class="subtext">
+          {{ s.name }} · {{ s.billing_cycle|title }}{% if s.company_name and s.contact_id %} · {{ s.company_name }}{% endif %}
+        </div>
+      </div>
+      <div class="sub-row-due">
+        <span class="badge {{ 'badge-red' if s.next_due_date|is_overdue and s.status == 'ACTIVE' else '' }}">{{ s.next_due_date|pretty_date }}</span>
+      </div>
+      <div class="sub-row-amount">{{ s.amount|currency }}</div>
+      <div class="sub-row-actions">
+        <form method="post" action="{{ url_for('subscriptions.set_status', sub_id=s.id) }}">
+          <input type="hidden" name="next" value="{{ request.full_path }}">
+          <select name="status" onchange="this.form.submit()">
+            <option value="ACTIVE" {{ 'selected' if s.status == 'ACTIVE' }}>Active</option>
+            <option value="PAUSED" {{ 'selected' if s.status == 'PAUSED' }}>Paused</option>
+            <option value="CANCELLED" {{ 'selected' if s.status == 'CANCELLED' }}>Cancelled</option>
+          </select>
+        </form>
+        <form method="post" action="{{ url_for('subscriptions.mark_paid', sub_id=s.id) }}">
+          <input type="hidden" name="next" value="{{ request.full_path }}">
+          <button type="submit" class="btn btn-outline btn-sm">Mark paid</button>
+        </form>
+        <a class="btn btn-outline btn-sm" href="{{ url_for('subscriptions.edit', sub_id=s.id) }}">Edit</a>
+        <form method="post" action="{{ url_for('subscriptions.delete', sub_id=s.id) }}" data-confirm="Delete this subscription?">
+          <button type="submit" class="del-btn" aria-label="Delete">✕</button>
+        </form>
+      </div>
+    </div>
+  {% endmacro %}
+
+  {% if not groups.overdue and not groups.due_this_week and not groups.due_this_month and not groups.later and not inactive %}
+    <div class="empty">
+      <h3>No subscriptions yet</h3>
+      <p>Track recurring billing for your clients and get reminders on your calendar.</p>
+      <a class="btn btn-primary" href="{{ url_for('subscriptions.new') }}">+ New subscription</a>
+    </div>
+  {% else %}
+    {% if groups.overdue %}
+      <div class="card">
+        <div class="card-header"><h2>Overdue ({{ groups.overdue|length }})</h2></div>
+        <div class="card-body">{% for s in groups.overdue %}{{ sub_row(s) }}{% endfor %}</div>
+      </div>
+    {% endif %}
+    {% if groups.due_this_week %}
+      <div class="card">
+        <div class="card-header"><h2>Due this week ({{ groups.due_this_week|length }})</h2></div>
+        <div class="card-body">{% for s in groups.due_this_week %}{{ sub_row(s) }}{% endfor %}</div>
+      </div>
+    {% endif %}
+    {% if groups.due_this_month %}
+      <div class="card">
+        <div class="card-header"><h2>Due this month ({{ groups.due_this_month|length }})</h2></div>
+        <div class="card-body">{% for s in groups.due_this_month %}{{ sub_row(s) }}{% endfor %}</div>
+      </div>
+    {% endif %}
+    {% if groups.later %}
+      <div class="card">
+        <div class="card-header"><h2>Later ({{ groups.later|length }})</h2></div>
+        <div class="card-body">{% for s in groups.later %}{{ sub_row(s) }}{% endfor %}</div>
+      </div>
+    {% endif %}
+    {% if inactive %}
+      <div class="card">
+        <div class="card-header"><h2>Paused / cancelled ({{ inactive|length }})</h2></div>
+        <div class="card-body">{% for s in inactive %}{{ sub_row(s) }}{% endfor %}</div>
+      </div>
+    {% endif %}
+  {% endif %}
+{% endblock %}

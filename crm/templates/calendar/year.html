@@ -4,7 +4,7 @@
   <div class="page-header">
     <div>
       <h1>Calendar</h1>
-      <p>The whole year at a glance — darker days have more follow-ups scheduled</p>
+      <p>The whole year at a glance — darker days have more follow-ups scheduled, dots mark a subscription payment due</p>
     </div>
     <div class="actions">
       <a class="btn btn-outline btn-sm" href="{{ url_for('calendar.index') }}">Month view</a>
@@ -31,7 +31,7 @@
                 {{ '' if day.in_month else 'out-of-month' }}
                 {{ 'is-today' if day.is_today else '' }}
                 {{ 'has-items' if day.count else '' }}
-                {{ 'busy' if day.count and day.count > 2 else '' }}">{{ day.day }}</span>
+                {{ 'busy' if day.count and day.count > 2 else '' }}">{{ day.day }}{% if day.has_sub %}<span class="mini-day-sub-dot"></span>{% endif %}</span>
             {% endfor %}
           {% endfor %}
         </div>

@@ -117,6 +117,17 @@
                   {% endif %}
                 </div>
               {% endfor %}
+              {% for s in cell.subscriptions %}
+                <div class="calendar-item calendar-sub-item" title="{{ s.name }} — {{ s.amount|currency }}">
+                  {% if s.contact_id %}
+                    <a href="{{ url_for('contacts.detail', contact_id=s.contact_id) }}">💰 {{ s.contact_first_name }} {{ s.contact_last_name }} — {{ s.amount|currency }}</a>
+                  {% elif s.company_id %}
+                    <a href="{{ url_for('companies.detail', company_id=s.company_id) }}">💰 {{ s.company_name }} — {{ s.amount|currency }}</a>
+                  {% else %}
+                    <span>💰 {{ s.name }} — {{ s.amount|currency }}</span>
+                  {% endif %}
+                </div>
+              {% endfor %}
             </div>
           </div>
         {% endfor %}

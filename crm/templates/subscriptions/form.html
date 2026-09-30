@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit subscription' if sub_id else 'New subscription' }} · Orbit CRM{% endblock %}
+{% block content %}
+  <div class="page-header">
+    <div>
+      <h1>{{ 'Edit subscription' if sub_id else 'New subscription' }}</h1>
+      <p>It'll show up on your calendar on its due date, and count toward monthly recurring revenue while active.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-body">
+      <form method="post">
+        <div class="form-grid">
+          <div class="field">
+            <label for="contact_id">Contact</label>
+            <select id="contact_id" name="contact_id">
+              <option value="">—</option>
+              {% for c in contacts %}
+                <option value="{{ c.id }}" data-company-id="{{ c.company_id or '' }}" {{ 'selected' if subscription.contact_id and subscription.contact_id|string == c.id|string }}>{{ c.first_name }} {{ c.last_name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="field">
+            <label for="company_id">Company</label>
+            <select id="company_id" name="company_id">
+              <option value="">—</option>
+              {% for co in companies %}
+                <option value="{{ co.id }}" {{ 'selected' if subscription.company_id and subscription.company_id|string == co.id|string }}>{{ co.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="field span-2">
+            <label for="name">Subscription name</label>
+            <input type="text" id="name" name="name" value="{{ subscription.name or 'Website Hosting' }}" required>
+          </div>
+          <div class="field">
+            <label for="amount">Amount (R)</label>
+            <input type="number" id="amount" name="amount" value="{{ subscription.amount }}" step="0.01" min="0">
+          </div>
+          <div class="field">
+            <label for="billing_cycle">Billing cycle</label>
+            <select id="billing_cycle" name="billing_cycle">
+              <option value="MONTHLY" {{ 'selected' if subscription.billing_cycle != 'YEARLY' }}>Monthly</option>
+              <option value="YEARLY" {{ 'selected' if subscription.billing_cycle == 'YEARLY' }}>Yearly</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="next_due_date">Next due date</label>
+            <input type="date" id="next_due_date" name="next_due_date" value="{{ subscription.next_due_date }}" required>
+          </div>
+          <div class="field span-2">
+            <label for="notes">Notes</label>
+            <textarea id="notes" name="notes" rows="2">{{ subscription.notes or '' }}</textarea>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary">Save subscription</button>
+        </div>
+      </form>
+    </div>
+  </div>
+{% endblock %}
+{% block scripts %}
+  <script src="{{ url_for('static', filename='invoice.js') }}"></script>
+{% endblock %}

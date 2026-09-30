@@ -676,6 +676,7 @@ tr.row-link:hover { background: #fafafa; }
   gap: 2px;
 }
 .mini-day {
+  position: relative;
   aspect-ratio: 1;
   display: flex;
   align-items: center;
@@ -688,6 +689,15 @@ tr.row-link:hover { background: #fafafa; }
 .mini-day.has-items { background: var(--blue-bg); color: var(--blue); font-weight: 600; }
 .mini-day.busy { background: var(--blue); color: #fff; }
 .mini-day.is-today { outline: 1.5px solid var(--accent); outline-offset: -1.5px; }
+.mini-day-sub-dot {
+  position: absolute;
+  bottom: 1px;
+  right: 1px;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--amber);
+}
 
 /* Invoice item editor (new/edit form) */
 .invoice-items-table th { padding: 8px 8px; }
@@ -858,4 +868,47 @@ tr.row-link:hover { background: #fafafa; }
   padding: 0 0 20px;
   height: auto;
   font-size: 16px;
+}
+
+/* Subscription reminders on the calendar */
+.calendar-sub-item {
+  background: var(--amber-bg);
+  color: var(--amber);
+  font-weight: 600;
+  border: 1px solid #fde5b3;
+}
+
+/* Subscriptions list */
+.sub-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+.sub-row:last-child { border-bottom: none; }
+.sub-row-main { flex: 1; min-width: 0; }
+.sub-row-title { font-weight: 600; }
+.sub-row-due { flex-shrink: 0; width: 110px; }
+.sub-row-amount { flex-shrink: 0; width: 90px; font-weight: 600; text-align: right; }
+.sub-row-actions { display: flex; gap: 6px; align-items: center; flex-shrink: 0; }
+.sub-row-actions select {
+  padding: 5px 8px;
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
+  font-size: 12px;
+  font-family: inherit;
+}
+.sub-row-actions .del-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-faint);
+  font-size: 13px;
+  padding: 4px;
+}
+.sub-row-actions .del-btn:hover { color: var(--red); }
+@media (max-width: 700px) {
+  .sub-row { flex-wrap: wrap; }
+  .sub-row-due, .sub-row-amount { width: auto; }
 }

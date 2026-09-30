@@ -11,6 +11,7 @@ A detailed CRM for tracking contacts, companies, deals, and tasks. Runs locally 
 - **Tasks by due date** — the Tasks page groups open tasks into Overdue, Due today, Due this week, Later, and No due date
 - **Inbox** — WhatsApp and Messenger conversations in one place: incoming messages auto-create or match a contact, and you can reply from inside the CRM
 - **Invoices** — generate professional, itemized invoices for a contact or company (pre-filled with your standard package), then print or save as PDF straight from the browser
+- **Subscriptions** — track recurring billing per client (amount, monthly/yearly, next due date); a visual list grouped by urgency (Overdue/Due this week/Due this month/Later) with monthly recurring revenue at a glance, and each due date shows up clearly marked on the Calendar until you mark it paid
 - **Dashboard** — key metrics, a pipeline-by-stage chart, upcoming tasks, and a recent activity feed
 - **Global search** across contacts, companies, and deals
 
@@ -216,6 +217,7 @@ crm/
     activities.py            Tasks + activity timeline (shared across contacts/companies/deals)
     calendar.py              Month view of scheduled follow-ups
     invoices.py              Generate/edit itemized invoices - edit BUSINESS/DEFAULT_ITEMS here
+    subscriptions.py         Recurring billing per client + calendar reminders
     search.py
     webhooks.py              Receives inbound WhatsApp/Messenger messages
     inbox.py                 Conversation list, thread view, sending replies
